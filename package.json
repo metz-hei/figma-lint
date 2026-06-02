@@ -1,0 +1,38 @@
+{
+  "name": "figma-lint",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:ui && npm run build:main && node scripts/write-dist-manifest.mjs",
+    "build:main": "node esbuild.config.mjs",
+    "build:ui": "vite build",
+    "watch": "concurrently \"vite build --watch\" \"node esbuild.config.mjs --watch\"",
+    "test": "node scripts/test-decimal-comma.mjs && node scripts/test-zero-cents.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-scroll-area": "^1.2.10",
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.511.0",
+    "radix-ui": "^1.4.3",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.0"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.109.0",
+    "@tailwindcss/vite": "^4.1.8",
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.6",
+    "@vitejs/plugin-react": "^4.5.2",
+    "concurrently": "^9.1.2",
+    "esbuild": "^0.25.0",
+    "tailwindcss": "^4.1.8",
+    "tw-animate-css": "^1.3.4",
+    "typescript": "^5.8.2",
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.2.0"
+  }
+}

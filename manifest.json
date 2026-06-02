@@ -1,0 +1,8 @@
+{
+  "name": "Figma Lint",
+  "id": "figma-lint-dev",
+  "api": "1.0.0",
+  "editorType": ["figma"],
+  "main": "dist/code.js",
+  "documentAccess": "dynamic-page"
+}
