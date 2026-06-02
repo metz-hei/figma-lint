@@ -11,6 +11,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@/components/ui/item";
+import { getFixedText } from "@/lib/issue";
 
 type IssuesListProps = {
   issues: LintIssue[];
@@ -36,7 +37,7 @@ export function IssuesList({
           <ItemContent>
             <ItemTitle className="gap-2 text-xs">
               <Badge variant="destructive">{issue.severity}</Badge>
-              <span>{issue.nodeName || "Text"}</span>
+              <span>{issue.ruleName}</span>
             </ItemTitle>
             <ItemDescription className="text-[11px] break-words">
               <HighlightedText
@@ -44,10 +45,14 @@ export function IssuesList({
                 start={issue.start}
                 end={issue.end}
               />
+              {" → "}
+              {getFixedText(issue)}
             </ItemDescription>
-            <ItemDescription className="text-[11px]">
-              {issue.message}
-            </ItemDescription>
+            {issue.message ? (
+              <ItemDescription className="text-[11px]">
+                {issue.message}
+              </ItemDescription>
+            ) : null}
           </ItemContent>
           <ItemActions>
             <Button

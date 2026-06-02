@@ -10,6 +10,7 @@ export type LintIssue = {
   nodeName: string;
   text: string;
   match: string;
+  replacement: string;
   start: number;
   end: number;
 };

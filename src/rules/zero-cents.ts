@@ -2,15 +2,13 @@ import type { Rule } from "../types";
 
 /**
  * Ловит суммы с нулевыми копейками перед валютой: «50,00 ₽», «120,0 $» и т.п.
- *
- * Исходный паттерн: [,][0]{0,}\s[₽|$|€|¥]
- * В JS: запятая + нули + пробел + символ валюты.
+ * Валюта нужна для поиска, но в подсветку не входит.
  */
-const ZERO_CENTS_REGEX = /,\s*0+\s*[₽$€¥]/g;
+const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥])/g;
 
 export const zeroCentsRule: Rule = {
   id: "zero-cents",
-  name: "Копейки в суммах",
+  name: "Не пишем копейки, если их нет",
   severity: "error",
   guide: [
     "Копейки пишем через запятую без пробелов. Если есть хотя бы одна копейка — в дробной части всегда две цифры. Если копеек в сумме нет — не показываем их.",
@@ -27,9 +25,10 @@ export const zeroCentsRule: Rule = {
 
       issues.push({
         ruleId: "zero-cents",
-        message: `Не показывай нулевые копейки: «${match[0].trim()}» → убери ,00`,
+        message: "",
         severity: "error",
         match: match[0],
+        replacement: "",
         start: match.index,
         end: match.index + match[0].length,
       });

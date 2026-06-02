@@ -24,9 +24,10 @@ export const decimalCommaRule: Rule = {
 
       issues.push({
         ruleId: "decimal-comma",
-        message: `Копейки через запятую: «${match[0].trim()}» → «${fixed.trim()}»`,
+        message: "",
         severity: "error",
         match: match[0],
+        replacement: fixed,
         start: match.index,
         end: match.index + match[0].length,
       });

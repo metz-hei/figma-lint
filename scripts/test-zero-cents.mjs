@@ -1,8 +1,12 @@
 /** Smoke-test для паттерна zero-cents (дублирует src/rules/zero-cents.ts). */
-const ZERO_CENTS_REGEX = /,\s*0+\s*[₽$€¥]/g;
+const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥])/g;
 
 function check(text) {
   return [...text.matchAll(ZERO_CENTS_REGEX)];
+}
+
+function getFixedText(text, match) {
+  return text.slice(0, match.index) + text.slice(match.index + match[0].length);
 }
 
 const cases = [
@@ -33,3 +37,22 @@ if (failed > 0) {
 }
 
 console.log(`\n${cases.length} cases passed`);
+
+const fixCases = [
+  { text: "50,00 ₽", fixed: "50 ₽" },
+  { text: "99,00€", fixed: "99€" },
+];
+
+for (const { text, fixed } of fixCases) {
+  const hits = check(text);
+  if (hits.length !== 1) {
+    console.error(`FAIL fix: "${text}" → expected 1 hit, got ${hits.length}`);
+    process.exit(1);
+  }
+  const got = getFixedText(text, hits[0]);
+  if (got !== fixed) {
+    console.error(`FAIL fix: "${text}" → expected "${fixed}", got "${got}"`);
+    process.exit(1);
+  }
+  console.log(`ok fix: "${text}" → "${got}"`);
+}
