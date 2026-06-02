@@ -1,5 +1,5 @@
 /** Smoke-test для паттерна zero-cents (дублирует src/rules/zero-cents.ts). */
-const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥])/g;
+const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥£₸₼])/g;
 
 function check(text) {
   return [...text.matchAll(ZERO_CENTS_REGEX)];
@@ -13,6 +13,9 @@ const cases = [
   { text: "50,00 ₽", expect: true },
   { text: "1 250,00 ₽", expect: true },
   { text: "50,0 $", expect: true },
+  { text: "50,00 £", expect: true },
+  { text: "1000,00 ₸", expect: true },
+  { text: "25,00 ₼", expect: true },
   { text: "50 ₽", expect: false },
   { text: "50,50 ₽", expect: false },
   { text: "Цена: 99,00€", expect: true },

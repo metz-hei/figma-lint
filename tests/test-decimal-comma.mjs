@@ -1,5 +1,5 @@
 /** Smoke-test для паттерна decimal-comma (дублирует src/rules/decimal-comma.ts). */
-const DECIMAL_COMMA_REGEX = /\d+\.\d+\s*[₽$€¥]/g;
+const DECIMAL_COMMA_REGEX = /\d+\.\d+\s*[₽$€¥£₸₼]/g;
 
 function check(text) {
   return [...text.matchAll(DECIMAL_COMMA_REGEX)];
@@ -9,6 +9,9 @@ const cases = [
   { text: "50.50 ₽", expect: true },
   { text: "1 250.00 ₽", expect: true },
   { text: "50.0 $", expect: true },
+  { text: "50.50 £", expect: true },
+  { text: "100.00 ₸", expect: true },
+  { text: "25.00 ₼", expect: true },
   { text: "50,50 ₽", expect: false },
   { text: "50 ₽", expect: false },
   { text: "50,00 ₽", expect: false },

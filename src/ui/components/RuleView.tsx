@@ -1,6 +1,7 @@
 import type { LintIssue } from "@shared/types";
 
-import { HighlightedText } from "@/components/HighlightedText";
+import { HighlightedIssueSnippet } from "@/components/HighlightedText";
+import { getIssueDisplaySnippet } from "@/lib/issue";
 import { Separator } from "@/components/ui/separator";
 import { TypographyP } from "@/components/ui/typography";
 
@@ -29,15 +30,13 @@ export function RuleView({ issue }: RuleViewProps) {
 
       <div>
         <p className="text-muted-foreground mb-2 text-[10px] font-semibold uppercase">
-          Эта ошибка
+          Текущая ошибка
         </p>
-        <TypographyP className="mt-0 mb-2 text-[11px]">{issue.message}</TypographyP>
-        <TypographyP className="mt-0 text-[11px] break-words">
-          <HighlightedText
-            text={issue.text}
-            start={issue.start}
-            end={issue.end}
-          />
+        <TypographyP className="mt-0 text-[11px] break-words [&:not(:first-child)]:mt-3">
+          {issue.message ? (
+            <span className="mb-2 block">{issue.message}</span>
+          ) : null}
+          <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
         </TypographyP>
       </div>
     </div>

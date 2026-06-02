@@ -1,6 +1,6 @@
 import type { LintIssue } from "@shared/types";
 
-import { HighlightedText } from "@/components/HighlightedText";
+import { HighlightedIssueSnippet } from "@/components/HighlightedText";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +11,7 @@ import {
   ItemGroup,
   ItemTitle,
 } from "@/components/ui/item";
-import { getFixedText } from "@/lib/issue";
+import { getIssueDisplaySnippet } from "@/lib/issue";
 
 type IssuesListProps = {
   issues: LintIssue[];
@@ -40,13 +40,9 @@ export function IssuesList({
               <span>{issue.ruleName}</span>
             </ItemTitle>
             <ItemDescription className="text-[11px] break-words">
-              <HighlightedText
-                text={issue.text}
-                start={issue.start}
-                end={issue.end}
-              />
+              <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
               {" → "}
-              {getFixedText(issue)}
+              {issue.replacement}
             </ItemDescription>
             {issue.message ? (
               <ItemDescription className="text-[11px]">

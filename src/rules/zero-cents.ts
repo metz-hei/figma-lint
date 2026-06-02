@@ -4,7 +4,7 @@ import type { Rule } from "../types";
  * Ловит суммы с нулевыми копейками перед валютой: «50,00 ₽», «120,0 $» и т.п.
  * Валюта нужна для поиска, но в подсветку не входит.
  */
-const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥])/g;
+const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥£₸₼])/g;
 
 export const zeroCentsRule: Rule = {
   id: "zero-cents",

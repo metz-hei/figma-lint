@@ -1,9 +1,35 @@
 import type { LintIssue } from "@shared/types";
 
-export function getFixedText(issue: LintIssue): string {
-  return (
-    issue.text.slice(0, issue.start) +
-    issue.replacement +
-    issue.text.slice(issue.end)
-  );
+export const ISSUE_SNIPPET_BEFORE = 12;
+export const ISSUE_SNIPPET_AFTER = 0;
+
+export type IssueSnippet = {
+  text: string;
+  start: number;
+  end: number;
+  prefixEllipsis: boolean;
+  suffixEllipsis: boolean;
+};
+
+export function getIssueSnippet(
+  text: string,
+  start: number,
+  end: number,
+  contextBefore = ISSUE_SNIPPET_BEFORE,
+  contextAfter = ISSUE_SNIPPET_AFTER,
+): IssueSnippet {
+  const snippetStart = Math.max(0, start - contextBefore);
+  const snippetEnd = Math.min(text.length, end + contextAfter);
+
+  return {
+    text: text.slice(snippetStart, snippetEnd),
+    start: start - snippetStart,
+    end: end - snippetStart,
+    prefixEllipsis: snippetStart > 0,
+    suffixEllipsis: snippetEnd < text.length,
+  };
+}
+
+export function getIssueDisplaySnippet(issue: LintIssue): IssueSnippet {
+  return getIssueSnippet(issue.text, issue.start, issue.end);
 }

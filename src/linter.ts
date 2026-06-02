@@ -1,8 +1,22 @@
 import type { LintIssue, Rule, RuleContext } from "./types";
+import { isEffectivelyVisible } from "./visibility";
+import { currencySpaceRule } from "./rules/currency-space";
 import { decimalCommaRule } from "./rules/decimal-comma";
+import { emailRule } from "./rules/email";
+import { multiplicationSignRule } from "./rules/multiplication-sign";
+import { negativeMinusRule } from "./rules/negative-minus";
+import { thousandSeparatorRule } from "./rules/thousand-separator";
 import { zeroCentsRule } from "./rules/zero-cents";
 
-const RULES: Rule[] = [decimalCommaRule, zeroCentsRule];
+const RULES: Rule[] = [
+  decimalCommaRule,
+  zeroCentsRule,
+  currencySpaceRule,
+  thousandSeparatorRule,
+  negativeMinusRule,
+  multiplicationSignRule,
+  emailRule,
+];
 
 function createRuleContext(node: TextNode): RuleContext {
   return {
@@ -47,7 +61,10 @@ export function lintText(
 }
 
 export function lintTextNodes(nodes: TextNode[]): LintIssue[] {
-  return nodes.flatMap((node) =>
-    lintText(node.characters, node.id, createRuleContext(node)),
-  );
+  return nodes.flatMap((node) => {
+    if (!isEffectivelyVisible(node)) {
+      return [];
+    }
+    return lintText(node.characters, node.id, createRuleContext(node));
+  });
 }

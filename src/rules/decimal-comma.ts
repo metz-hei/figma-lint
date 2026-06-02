@@ -3,7 +3,7 @@ import type { Rule } from "../types";
 /**
  * Ловит суммы с точкой вместо запятой перед валютой: «50.50 ₽», «120.0 $» и т.п.
  */
-const DECIMAL_COMMA_REGEX = /\d+\.\d+\s*[₽$€¥]/g;
+const DECIMAL_COMMA_REGEX = /\d+\.\d+\s*[₽$€¥£₸₼]/g;
 
 export const decimalCommaRule: Rule = {
   id: "decimal-comma",

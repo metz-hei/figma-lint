@@ -9,14 +9,30 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { onPluginMessage, postToPlugin } from "@/lib/figma";
 
+function ruPlural(n: number, [one, few, many]: [string, string, string]): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return few;
+  return many;
+}
+
+function formatScannedLayers(n: number): string {
+  const layer = ruPlural(n, ["слой", "слоя", "слоёв"]);
+  if (n % 10 === 1 && n % 100 !== 11) {
+    return `${n} текстовый ${layer}`;
+  }
+  return `${n} текстовых ${layer}`;
+}
+
 function formatSummary(issues: LintIssue[], scanned: number) {
   if (issues.length === 0) {
-    return `Проверено ${scanned} текстовых слоёв — замечаний нет`;
+    return `Проверено ${formatScannedLayers(scanned)} — замечаний нет`;
   }
 
-  const suffix =
-    issues.length === 1 ? "ие" : issues.length < 5 ? "ения" : "ий";
-  return `${issues.length} замеч.${suffix} · ${scanned} слоёв`;
+  const remark = ruPlural(issues.length, ["ание", "ания", "аний"]);
+  const layer = ruPlural(scanned, ["слой", "слоя", "слоёв"]);
+  return `${issues.length} замеч${remark} · ${scanned} ${layer}`;
 }
 
 export default function App() {
@@ -76,7 +92,7 @@ export default function App() {
           <RuleView issue={activeIssue} />
         ) : issues.length === 0 ? (
           <p className="text-muted-foreground px-3 py-6 text-center text-[11px]">
-            Всё чисто. Правило: не показывать ,00 перед валютой.
+            Всё чисто
           </p>
         ) : (
           <IssuesList
@@ -116,7 +132,7 @@ export default function App() {
             onClick={() => activeIssue && handleSelectNode(activeIssue)}
             disabled={!activeIssue}
           >
-            Перейти к слою
+            Перейти к ошибке
           </Button>
         </footer>
       )}

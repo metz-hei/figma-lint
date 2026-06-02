@@ -7,7 +7,7 @@
     "build:main": "node esbuild.config.mjs",
     "build:ui": "vite build",
     "watch": "concurrently \"vite build --watch\" \"node esbuild.config.mjs --watch\"",
-    "test": "node scripts/test-decimal-comma.mjs && node scripts/test-zero-cents.mjs"
+    "test": "node scripts/run-tests.mjs"
   },
   "dependencies": {
     "@radix-ui/react-scroll-area": "^1.2.10",

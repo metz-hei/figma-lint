@@ -9,6 +9,9 @@ function collectTextNodes(): TextNode[] {
   const nodes: TextNode[] = [];
 
   const walk = (node: SceneNode) => {
+    if (!node.visible) {
+      return;
+    }
     if (node.type === "TEXT" && node.characters.trim().length > 0) {
       nodes.push(node);
     }
@@ -19,7 +22,9 @@ function collectTextNodes(): TextNode[] {
     }
   };
 
-  walk(figma.currentPage);
+  for (const child of figma.currentPage.children) {
+    walk(child);
+  }
   return nodes;
 }
 
