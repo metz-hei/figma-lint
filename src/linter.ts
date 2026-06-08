@@ -2,9 +2,11 @@ import type { LintIssue, Rule, RuleContext } from "./types";
 import { isEffectivelyVisible } from "./visibility";
 import { currencySpaceRule } from "./rules/currency-space";
 import { decimalCommaRule } from "./rules/decimal-comma";
+import { duplicateSpacesRule } from "./rules/duplicate-spaces";
 import { emailRule } from "./rules/email";
 import { multiplicationSignRule } from "./rules/multiplication-sign";
 import { negativeMinusRule } from "./rules/negative-minus";
+import { punctuationSpaceRule } from "./rules/punctuation-space";
 import { thousandSeparatorRule } from "./rules/thousand-separator";
 import { zeroCentsRule } from "./rules/zero-cents";
 
@@ -16,6 +18,8 @@ const RULES: Rule[] = [
   negativeMinusRule,
   multiplicationSignRule,
   emailRule,
+  duplicateSpacesRule,
+  punctuationSpaceRule,
 ];
 
 function createRuleContext(node: TextNode): RuleContext {
