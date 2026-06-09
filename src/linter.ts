@@ -7,6 +7,7 @@ import { emailRule } from "./rules/email";
 import { multiplicationSignRule } from "./rules/multiplication-sign";
 import { negativeMinusRule } from "./rules/negative-minus";
 import { punctuationSpaceRule } from "./rules/punctuation-space";
+import { repeatWordsRule } from "./rules/repeat-words";
 import { thousandSeparatorRule } from "./rules/thousand-separator";
 import { zeroCentsRule } from "./rules/zero-cents";
 
@@ -20,9 +21,10 @@ const RULES: Rule[] = [
   emailRule,
   duplicateSpacesRule,
   punctuationSpaceRule,
+  repeatWordsRule,
 ];
 
-function createRuleContext(node: TextNode): RuleContext {
+export function createRuleContext(node: TextNode): RuleContext {
   return {
     nodeName: node.name,
     inLayerNamed(name) {

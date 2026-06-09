@@ -1,4 +1,5 @@
 import { lintTextNodes } from "./linter";
+import { lintTextNodesSpell } from "./spell-lint";
 import type { LintResultMessage } from "./types";
 
 declare const __html__: string;
@@ -28,13 +29,22 @@ function collectTextNodes(): TextNode[] {
   return nodes;
 }
 
-function runLint(): LintResultMessage {
+async function runLint(): Promise<LintResultMessage> {
   const textNodes = collectTextNodes();
-  const issues = lintTextNodes(textNodes);
+  const syncIssues = lintTextNodes(textNodes);
+  const { issues: spellIssues, error: spellError } =
+    await lintTextNodesSpell(textNodes);
+
+  if (spellError) {
+    figma.notify(
+      `${spellError}. Проверьте интернет и перезагрузите плагин после npm run build.`,
+      { error: true },
+    );
+  }
 
   return {
     type: "lint-result",
-    issues,
+    issues: [...syncIssues, ...spellIssues],
     scanned: textNodes.length,
   };
 }
@@ -46,7 +56,7 @@ figma.ui.onmessage = (msg: { type: string; nodeId?: string }) => {
   }
 
   if (msg.type === "lint") {
-    figma.ui.postMessage(runLint());
+    void runLint().then((result) => figma.ui.postMessage(result));
     return;
   }
 
@@ -66,4 +76,4 @@ async function selectNodeById(nodeId: string): Promise<void> {
   figma.viewport.scrollAndZoomIntoView([sceneNode]);
 }
 
-figma.ui.postMessage(runLint());
+void runLint().then((result) => figma.ui.postMessage(result));

@@ -4,5 +4,9 @@
   "api": "1.0.0",
   "editorType": ["figma"],
   "main": "dist/code.js",
-  "documentAccess": "dynamic-page"
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["https://speller.yandex.net"],
+    "reasoning": "Проверка орфографии через API Яндекс.Спеллера (ru/en)."
+  }
 }

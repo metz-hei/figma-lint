@@ -7,6 +7,11 @@ const manifest = {
   editorType: ["figma"],
   main: "code.js",
   documentAccess: "dynamic-page",
+  networkAccess: {
+    allowedDomains: ["https://speller.yandex.net"],
+    reasoning:
+      "Проверка орфографии через API Яндекс.Спеллера (ru/en).",
+  },
 };
 
 mkdirSync("dist", { recursive: true });
