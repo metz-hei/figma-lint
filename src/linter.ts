@@ -9,10 +9,12 @@ import { negativeMinusRule } from "./rules/negative-minus";
 import { punctuationSpaceRule } from "./rules/punctuation-space";
 import { repeatWordsRule } from "./rules/repeat-words";
 import { thousandSeparatorRule } from "./rules/thousand-separator";
+import { incompleteCentsRule } from "./rules/incomplete-cents";
 import { zeroCentsRule } from "./rules/zero-cents";
 
 const RULES: Rule[] = [
   decimalCommaRule,
+  incompleteCentsRule,
   zeroCentsRule,
   currencySpaceRule,
   thousandSeparatorRule,

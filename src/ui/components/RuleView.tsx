@@ -46,11 +46,15 @@ export function RuleView({ issue }: RuleViewProps) {
           Текущая ошибка
         </p>
         <TypographyP className="mt-0 text-[11px] break-words [&:not(:first-child)]:mt-3">
-          {issue.message ? (
-            <span className="mb-2 block">{issue.message}</span>
-          ) : null}
           <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
+          {" → "}
+          {issue.replacement}
         </TypographyP>
+        {issue.message ? (
+          <TypographyP className="mt-0 text-[11px] break-words [&:not(:first-child)]:mt-3">
+            {issue.message}
+          </TypographyP>
+        ) : null}
       </div>
     </div>
   );
