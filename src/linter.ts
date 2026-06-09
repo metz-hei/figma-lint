@@ -1,4 +1,4 @@
-import type { LintIssue, Rule, RuleContext } from "./types";
+import type { LintIssue, Rule, RuleContext, RuleCatalogEntry } from "./types";
 import { isEffectivelyVisible } from "./visibility";
 import { currencySpaceRule } from "./rules/currency-space";
 import { decimalCommaRule } from "./rules/decimal-comma";
@@ -24,6 +24,10 @@ const RULES: Rule[] = [
   repeatWordsRule,
 ];
 
+export function getRulesCatalog(): RuleCatalogEntry[] {
+  return RULES.map(({ id, name }) => ({ id, name }));
+}
+
 export function createRuleContext(node: TextNode): RuleContext {
   return {
     nodeName: node.name,
@@ -47,10 +51,15 @@ export function lintText(
   text: string,
   nodeId: string,
   context: RuleContext,
+  enabledRuleIds?: ReadonlySet<string>,
 ): LintIssue[] {
   const issues: LintIssue[] = [];
+  const rules =
+    enabledRuleIds === undefined
+      ? RULES
+      : RULES.filter((rule) => enabledRuleIds.has(rule.id));
 
-  for (const rule of RULES) {
+  for (const rule of rules) {
     for (const hit of rule.check(text, context)) {
       issues.push({
         ...hit,
@@ -66,11 +75,19 @@ export function lintText(
   return issues;
 }
 
-export function lintTextNodes(nodes: TextNode[]): LintIssue[] {
+export function lintTextNodes(
+  nodes: TextNode[],
+  enabledRuleIds?: ReadonlySet<string>,
+): LintIssue[] {
   return nodes.flatMap((node) => {
     if (!isEffectivelyVisible(node)) {
       return [];
     }
-    return lintText(node.characters, node.id, createRuleContext(node));
+    return lintText(
+      node.characters,
+      node.id,
+      createRuleContext(node),
+      enabledRuleIds,
+    );
   });
 }

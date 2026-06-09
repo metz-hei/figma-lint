@@ -1,10 +1,24 @@
 import { lintTextNodes } from "./linter";
+import {
+  getDefaultSettings,
+  getFullRulesCatalog,
+  normalizeSettings,
+  SETTINGS_STORAGE_KEY,
+} from "./settings";
+import { spellCheckRule } from "./rules/spell-check";
 import { lintTextNodesSpell } from "./spell-lint";
-import type { LintResultMessage } from "./types";
+import type {
+  InitMessage,
+  LintResultMessage,
+  PluginSettings,
+  SettingsUpdatedMessage,
+} from "./types";
 
 declare const __html__: string;
 
 figma.showUI(__html__, { width: 420, height: 560, themeColors: true });
+
+let settings: PluginSettings = getDefaultSettings();
 
 function collectTextNodes(): TextNode[] {
   const nodes: TextNode[] = [];
@@ -29,11 +43,33 @@ function collectTextNodes(): TextNode[] {
   return nodes;
 }
 
+function getEnabledRuleIds(): Set<string> {
+  return new Set(settings.enabledRuleIds);
+}
+
+async function loadSettings(): Promise<void> {
+  const stored = await figma.clientStorage.getAsync(SETTINGS_STORAGE_KEY);
+  settings = normalizeSettings(stored as PluginSettings | null | undefined);
+}
+
+async function saveSettings(next: PluginSettings): Promise<void> {
+  settings = normalizeSettings(next);
+  await figma.clientStorage.setAsync(SETTINGS_STORAGE_KEY, settings);
+}
+
 async function runLint(): Promise<LintResultMessage> {
   const textNodes = collectTextNodes();
-  const syncIssues = lintTextNodes(textNodes);
-  const { issues: spellIssues, error: spellError } =
-    await lintTextNodesSpell(textNodes);
+  const enabledRuleIds = getEnabledRuleIds();
+  const syncIssues = lintTextNodes(textNodes, enabledRuleIds);
+
+  let spellIssues: LintResultMessage["issues"] = [];
+  let spellError: string | undefined;
+
+  if (enabledRuleIds.has(spellCheckRule.id)) {
+    const spellResult = await lintTextNodesSpell(textNodes);
+    spellIssues = spellResult.issues;
+    spellError = spellResult.error;
+  }
 
   if (spellError) {
     figma.notify(
@@ -49,7 +85,20 @@ async function runLint(): Promise<LintResultMessage> {
   };
 }
 
-figma.ui.onmessage = (msg: { type: string; nodeId?: string }) => {
+function postInit(): void {
+  const message: InitMessage = {
+    type: "init",
+    rulesCatalog: getFullRulesCatalog(),
+    settings,
+  };
+  figma.ui.postMessage(message);
+}
+
+figma.ui.onmessage = (msg: {
+  type: string;
+  nodeId?: string;
+  enabledRuleIds?: string[];
+}) => {
   if (msg.type === "close") {
     figma.closePlugin();
     return;
@@ -57,6 +106,20 @@ figma.ui.onmessage = (msg: { type: string; nodeId?: string }) => {
 
   if (msg.type === "lint") {
     void runLint().then((result) => figma.ui.postMessage(result));
+    return;
+  }
+
+  if (msg.type === "update-settings" && msg.enabledRuleIds) {
+    void saveSettings({ enabledRuleIds: msg.enabledRuleIds })
+      .then(() => {
+        const updated: SettingsUpdatedMessage = {
+          type: "settings-updated",
+          settings,
+        };
+        figma.ui.postMessage(updated);
+        return runLint();
+      })
+      .then((result) => figma.ui.postMessage(result));
     return;
   }
 
@@ -76,4 +139,11 @@ async function selectNodeById(nodeId: string): Promise<void> {
   figma.viewport.scrollAndZoomIntoView([sceneNode]);
 }
 
-void runLint().then((result) => figma.ui.postMessage(result));
+async function bootstrap(): Promise<void> {
+  await loadSettings();
+  postInit();
+  const result = await runLint();
+  figma.ui.postMessage(result);
+}
+
+void bootstrap();

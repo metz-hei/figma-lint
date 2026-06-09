@@ -33,6 +33,31 @@ export type Rule = {
   >[];
 };
 
+export type RuleCatalogEntry = {
+  id: string;
+  name: string;
+};
+
+export type PluginSettings = {
+  enabledRuleIds: string[];
+};
+
+export type InitMessage = {
+  type: "init";
+  rulesCatalog: RuleCatalogEntry[];
+  settings: PluginSettings;
+};
+
+export type UpdateSettingsMessage = {
+  type: "update-settings";
+  enabledRuleIds: string[];
+};
+
+export type SettingsUpdatedMessage = {
+  type: "settings-updated";
+  settings: PluginSettings;
+};
+
 export type LintResultMessage = {
   type: "lint-result";
   issues: LintIssue[];
