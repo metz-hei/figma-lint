@@ -7,6 +7,7 @@ export const duplicateSpacesRule: Rule = {
   id: "duplicate-spaces",
   name: "Задублированные пробелы",
   severity: "error",
+  type: "Ошибка набора",
   guide: [
     "Между словами и знаками препинания используем один пробел",
   ],
@@ -19,7 +20,6 @@ export const duplicateSpacesRule: Rule = {
       issues.push({
         ruleId: "duplicate-spaces",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: " ",
         start: match.index,

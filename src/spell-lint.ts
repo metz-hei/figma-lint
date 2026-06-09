@@ -26,6 +26,8 @@ export async function lintTextNodesSpell(
 
     return mapSpellErrors(node.characters, spellErrors).map((hit) => ({
       ...hit,
+      severity: spellCheckRule.severity,
+      type: spellCheckRule.type,
       ruleName: spellCheckRule.name,
       ruleGuide: spellCheckRule.guide,
       nodeId: node.id,

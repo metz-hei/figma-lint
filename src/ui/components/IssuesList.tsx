@@ -1,7 +1,6 @@
 import type { LintIssue } from "@shared/types";
 
 import { HighlightedIssueSnippet } from "@/components/HighlightedText";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Item,
@@ -35,10 +34,7 @@ export function IssuesList({
           onClick={() => onSelectNode(issue)}
         >
           <ItemContent>
-            <ItemTitle className="gap-2 text-xs">
-              <Badge variant="destructive">{issue.severity}</Badge>
-              <span>{issue.ruleName}</span>
-            </ItemTitle>
+            <ItemTitle className="text-xs">{issue.ruleName}</ItemTitle>
             <ItemDescription className="text-[11px] break-words">
               <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
               {" → "}

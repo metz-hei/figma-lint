@@ -9,6 +9,7 @@ export const decimalCommaRule: Rule = {
   id: "decimal-comma",
   name: "Копейки ставятся через запятую",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Копейки пишем через запятую без пробелов. Если есть хотя бы одна копейка — в дробной части всегда две цифры. Если копеек в сумме нет — не показываем их.",
     "Копейки могут отличаться от суммы по размеру и цвету. Для правильного написания используйте компоненты Amount (для веба) и List / AccountInfo (для мобилы). Их можно найти в файле 01 ✅ Headers & Text, Tabel & List.",
@@ -25,7 +26,6 @@ export const decimalCommaRule: Rule = {
       issues.push({
         ruleId: "decimal-comma",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: fixed,
         start: match.index,

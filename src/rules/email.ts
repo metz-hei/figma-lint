@@ -21,6 +21,7 @@ export const emailRule: Rule = {
   id: "email",
   name: "Имейл или электронная почта",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Иностранные слова и названия пишем по-русски и склоняем по правилам русского языка.",
     "Если термина нет в редполитике, смотрим правильное написание в «Академосе» Института русского языка РАН.",
@@ -34,7 +35,6 @@ export const emailRule: Rule = {
       issues.push({
         ruleId: "email",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: emailReplacement(match[0]),
         start: match.index,

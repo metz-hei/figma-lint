@@ -30,6 +30,7 @@ export const repeatWordsRule: Rule = {
   id: "repeat-words",
   name: "Повтор слова",
   severity: "warning",
+  type: "Ошибка набора",
   guide: [
     "Одно и то же слово не должно идти подряд дважды.",
   ],
@@ -56,7 +57,6 @@ export const repeatWordsRule: Rule = {
       issues.push({
         ruleId: "repeat-words",
         message: "Повтор слова",
-        severity: "warning",
         match: word,
         replacement: "",
         start,

@@ -63,6 +63,8 @@ export function lintText(
     for (const hit of rule.check(text, context)) {
       issues.push({
         ...hit,
+        severity: rule.severity,
+        type: rule.type,
         ruleName: rule.name,
         ruleGuide: rule.guide,
         nodeId,

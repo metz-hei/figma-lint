@@ -21,7 +21,6 @@ function collectIssues(
     issues.push({
       ruleId,
       message: "",
-      severity: "error",
       match: match[0],
       replacement: `${char}${punct}`,
       start: match.index,
@@ -36,6 +35,7 @@ export const punctuationSpaceRule: Rule = {
   id: "punctuation-space",
   name: "Знаки препинания пишутся без пробела слева",
   severity: "error",
+  type: "Ошибка набора",
   guide: [
     "Знаки ! , . ? ; : … пишутся без пробела от предыдущего слова или символа.",
   ],

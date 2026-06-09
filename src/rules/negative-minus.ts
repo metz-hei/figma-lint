@@ -9,6 +9,7 @@ export const negativeMinusRule: Rule = {
   id: "negative-minus",
   name: "Отрицательные числа пишем с минусом",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Длинное тире ставим между частями предложения:",
     "Сегодня дождь — возьмите зонт.",
@@ -26,7 +27,6 @@ export const negativeMinusRule: Rule = {
       issues.push({
         ruleId: "negative-minus",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: CORRECT_MINUS,
         start: match.index,

@@ -22,6 +22,26 @@ function formatThousands(digits: string): string {
 const NUMBER_REGEX =
   /(?<![\d])([–−—-]?)((?:\d{1,3}(?:[ \u00A0\u202F,.]\d{3})+|\d{4,})(?:,\d+)?)(?![\d,.])/g;
 
+/** Даты вида 12.12.2004 — точки не тысячные разделители. */
+const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
+
+function isPartOfDate(text: string, start: number, end: number): boolean {
+  for (const dateMatch of text.matchAll(DATE_REGEX)) {
+    if (dateMatch.index === undefined) continue;
+
+    const dateStart = dateMatch.index;
+    const dateEnd = dateStart + dateMatch[0].length;
+    if (start >= dateStart && end <= dateEnd) return true;
+  }
+
+  return false;
+}
+
+/** ИНН и прочие идентификаторы: 10+ цифр подряд без разделителей. */
+function isLongDigitRun(body: string): boolean {
+  return /\d{10,}/.test(body);
+}
+
 function parseNumberBody(body: string): { intDigits: string; frac?: string } | null {
   const enThousands = body.match(/^(\d{1,3}(?:,\d{3})+)(?:,(\d+))?$/);
   if (enThousands) {
@@ -73,10 +93,11 @@ function formatNumberToken(sign: string, body: string): string | null {
 
 export const thousandSeparatorRule: Rule = {
   id: "thousand-separator",
-  name: "Разряды чисел отбиваются неразрывным пробелом",
+  name: "Разряды отбиваются неразрывным пробелом",
   severity: "error",
+  type: "Редполитика",
   guide: [
-    "В суммах в интерфейсах отбиваем неразрывным пробелом каждый тысячный разряд. Суммы в текстах отделяем пробелами только числа от пяти знаков.",
+    "Отбиваем разряды неразрывным пробелом начиная с тысяч.",
   ],
   check(text, _context) {
     const issues: ReturnType<Rule["check"]> = [];
@@ -86,6 +107,11 @@ export const thousandSeparatorRule: Rule = {
 
       const sign = match[1] ?? "";
       const body = match[2];
+      const start = match.index;
+      const end = start + match[0].length;
+
+      if (isPartOfDate(text, start, end) || isLongDigitRun(body)) continue;
+
       const fixed = formatNumberToken(sign, body);
       if (!fixed) continue;
 
@@ -94,11 +120,10 @@ export const thousandSeparatorRule: Rule = {
       issues.push({
         ruleId: "thousand-separator",
         message: "",
-        severity: "error",
         match: raw,
         replacement: fixed,
-        start: match.index,
-        end: match.index + raw.length,
+        start,
+        end,
       });
     }
 

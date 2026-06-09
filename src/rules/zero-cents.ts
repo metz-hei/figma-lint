@@ -10,6 +10,7 @@ export const zeroCentsRule: Rule = {
   id: "zero-cents",
   name: "Не пишем копейки, если их нет",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Копейки пишем через запятую без пробелов. Если есть хотя бы одна копейка — в дробной части всегда две цифры. Если копеек в сумме нет — не показываем их.",
     "Копейки могут отличаться от суммы по размеру и цвету. Для правильного написания используйте компоненты Amount (для веба) и List / AccountInfo (для мобилы). Их можно найти в файле 01 ✅ Headers & Text, Tabel & List.",
@@ -26,7 +27,6 @@ export const zeroCentsRule: Rule = {
       issues.push({
         ruleId: "zero-cents",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: "",
         start: match.index,

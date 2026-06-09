@@ -5,6 +5,24 @@ const NARROW_NBSP = "\u202F";
 const NUMBER_REGEX =
   /(?<![\d])([–−—-]?)((?:\d{1,3}(?:[ \u00A0\u202F,.]\d{3})+|\d{4,})(?:,\d+)?)(?![\d,.])/g;
 
+const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
+
+function isPartOfDate(text, start, end) {
+  for (const dateMatch of text.matchAll(DATE_REGEX)) {
+    if (dateMatch.index === undefined) continue;
+
+    const dateStart = dateMatch.index;
+    const dateEnd = dateStart + dateMatch[0].length;
+    if (start >= dateStart && end <= dateEnd) return true;
+  }
+
+  return false;
+}
+
+function isLongDigitRun(body) {
+  return /\d{10,}/.test(body);
+}
+
 function formatThousands(digits) {
   if (digits.length <= 3) return digits;
   const groups = [];
@@ -65,8 +83,15 @@ function formatNumberToken(sign, body) {
 function check(text) {
   const hits = [];
   for (const match of text.matchAll(NUMBER_REGEX)) {
+    if (match.index === undefined) continue;
+
     const sign = match[1] ?? "";
     const body = match[2];
+    const start = match.index;
+    const end = start + match[0].length;
+
+    if (isPartOfDate(text, start, end) || isLongDigitRun(body)) continue;
+
     const fixed = formatNumberToken(sign, body);
     if (fixed) hits.push({ match, fixed });
   }
@@ -100,6 +125,11 @@ const cases = [
   { text: "50,50", expect: false },
   { text: "50×50", expect: false },
   { text: "50–100", expect: false },
+  { text: "12.12.2004", expect: false },
+  { text: "до 01.01.2020 включительно", expect: false },
+  { text: "1234567890", expect: false },
+  { text: "ИНН 1234567890", expect: false },
+  { text: "10000000000", expect: false },
   { text: "Цена: 5000 ₽", expect: true },
   { text: "10,000,000", expect: true },
 ];

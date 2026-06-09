@@ -1,6 +1,7 @@
 import type { LintIssue } from "@shared/types";
 
 import { HighlightedIssueSnippet } from "@/components/HighlightedText";
+import { Badge } from "@/components/ui/badge";
 import { getIssueDisplaySnippet } from "@/lib/issue";
 import { Separator } from "@/components/ui/separator";
 import { TypographyP } from "@/components/ui/typography";
@@ -23,6 +24,18 @@ export function RuleView({ issue }: RuleViewProps) {
               {paragraph}
             </TypographyP>
           ))}
+        </div>
+      </div>
+
+      <Separator />
+
+      <div>
+        <p className="text-muted-foreground mb-2 text-[10px] font-semibold uppercase">
+          Правило
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="outline">{issue.type}</Badge>
+          <Badge variant="outline">{issue.ruleId}</Badge>
         </div>
       </div>
 

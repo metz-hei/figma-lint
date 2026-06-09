@@ -1,11 +1,14 @@
 export type LintSeverity = "error" | "warning";
 
+export type LintType = "Редполитика" | "Ошибка набора";
+
 export type LintIssue = {
   ruleId: string;
   ruleName: string;
   ruleGuide: string[];
   message: string;
   severity: LintSeverity;
+  type: LintType;
   nodeId: string;
   nodeName: string;
   text: string;
@@ -25,11 +28,12 @@ export type Rule = {
   id: string;
   name: string;
   severity: LintSeverity;
+  type: LintType;
   /** Сопроводительный текст правила — абзацы для показа в UI */
   guide: string[];
   check: (text: string, context: RuleContext) => Omit<
     LintIssue,
-    "nodeId" | "nodeName" | "text" | "ruleName" | "ruleGuide"
+    "nodeId" | "nodeName" | "text" | "ruleName" | "ruleGuide" | "severity" | "type"
   >[];
 };
 

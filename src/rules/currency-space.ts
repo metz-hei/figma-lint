@@ -9,6 +9,7 @@ export const currencySpaceRule: Rule = {
   id: "currency-space",
   name: "Символ валюты пишется отдельно от числа",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Если сумма в рублях — используем знак ₽. Если в долларах — $. В обоих случаях знак ставим после суммы, через неразрывный пробел.",
     "Если знак ₽ недоступен по техническим причинам — пишем руб. с точкой.",
@@ -25,7 +26,6 @@ export const currencySpaceRule: Rule = {
       issues.push({
         ruleId: "currency-space",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: `${digit} ${currency}`,
         start: match.index,

@@ -1,18 +1,19 @@
 import { isCustomWord } from "../spell/checker";
 import { shouldSkipToken } from "../spell/skip";
 import type { YandexSpellError } from "../spell/yandex";
-import type { LintSeverity, Rule } from "../types";
+import type { LintType, Rule } from "../types";
 
 export const spellCheckRule = {
   id: "spell-check",
   name: "Орфография",
-  severity: "warning" as LintSeverity,
+  severity: "warning" as const,
+  type: "Ошибка набора" as LintType,
   guide: [
     "Возможная опечатка — проверьте глазами. Это предупреждение, а не нарушение редполитики.",
     "Проверка через Яндекс.Спеллер (русский и английский). Тексты отправляются на сервер Яндекса.",
     "Бренды и внутренние термины добавляйте в кастомный справочник (src/spell/custom-words.ts).",
   ],
-} satisfies Pick<Rule, "id" | "name" | "severity" | "guide">;
+} satisfies Pick<Rule, "id" | "name" | "severity" | "type" | "guide">;
 
 export function mapSpellErrors(
   text: string,
@@ -40,7 +41,6 @@ export function mapSpellErrors(
     issues.push({
       ruleId: spellCheckRule.id,
       message,
-      severity: spellCheckRule.severity,
       match: word,
       replacement,
       start,

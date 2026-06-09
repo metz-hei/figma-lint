@@ -12,6 +12,7 @@ export const multiplicationSignRule: Rule = {
   id: "multiplication-sign",
   name: "Различаем знак умножения",
   severity: "error",
+  type: "Редполитика",
   guide: [
     "Между числами в размерах или примерах ставим знак умножения × (U+00D7), без пробелов: 50×50"
   ],
@@ -28,7 +29,6 @@ export const multiplicationSignRule: Rule = {
       issues.push({
         ruleId: "multiplication-sign",
         message: "",
-        severity: "error",
         match: match[0],
         replacement: fixed,
         start: match.index,
