@@ -1,5 +1,5 @@
 import { createRuleContext } from "./linter";
-import { mapSpellErrors, spellCheckRule } from "./rules/spell-check";
+import { mapSpellErrors, spellCheckRule } from "./rdpk/spell-check";
 import { checkTextsSpell } from "./spell/checker";
 import type { LintIssue } from "./types";
 import { isEffectivelyVisible } from "./visibility";
@@ -26,6 +26,7 @@ export async function lintTextNodesSpell(
 
     return mapSpellErrors(node.characters, spellErrors).map((hit) => ({
       ...hit,
+      issueKind: "text" as const,
       severity: spellCheckRule.severity,
       type: spellCheckRule.type,
       ruleName: spellCheckRule.name,

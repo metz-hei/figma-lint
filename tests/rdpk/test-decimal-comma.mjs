@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна decimal-comma (дублирует src/rules/decimal-comma.ts). */
+/** Smoke-test для паттерна decimal-comma (дублирует src/rdpk/decimal-comma.ts). */
 const DECIMAL_COMMA_REGEX = /\d+\.\d+\s*[₽$€¥£₸₼]/g;
 
 function check(text) {

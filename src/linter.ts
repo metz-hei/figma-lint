@@ -1,16 +1,16 @@
 import type { LintIssue, Rule, RuleContext, RuleCatalogEntry } from "./types";
 import { isEffectivelyVisible } from "./visibility";
-import { currencySpaceRule } from "./rules/currency-space";
-import { decimalCommaRule } from "./rules/decimal-comma";
-import { duplicateSpacesRule } from "./rules/duplicate-spaces";
-import { emailRule } from "./rules/email";
-import { multiplicationSignRule } from "./rules/multiplication-sign";
-import { negativeMinusRule } from "./rules/negative-minus";
-import { punctuationSpaceRule } from "./rules/punctuation-space";
-import { repeatWordsRule } from "./rules/repeat-words";
-import { thousandSeparatorRule } from "./rules/thousand-separator";
-import { incompleteCentsRule } from "./rules/incomplete-cents";
-import { zeroCentsRule } from "./rules/zero-cents";
+import { currencySpaceRule } from "./rdpk/currency-space";
+import { decimalCommaRule } from "./rdpk/decimal-comma";
+import { duplicateSpacesRule } from "./rdpk/duplicate-spaces";
+import { emailRule } from "./rdpk/email";
+import { multiplicationSignRule } from "./rdpk/multiplication-sign";
+import { negativeMinusRule } from "./rdpk/negative-minus";
+import { punctuationSpaceRule } from "./rdpk/punctuation-space";
+import { repeatWordsRule } from "./rdpk/repeat-words";
+import { thousandSeparatorRule } from "./rdpk/thousand-separator";
+import { incompleteCentsRule } from "./rdpk/incomplete-cents";
+import { zeroCentsRule } from "./rdpk/zero-cents";
 
 const RULES: Rule[] = [
   decimalCommaRule,
@@ -27,7 +27,11 @@ const RULES: Rule[] = [
 ];
 
 export function getRulesCatalog(): RuleCatalogEntry[] {
-  return RULES.map(({ id, name }) => ({ id, name }));
+  return RULES.map(({ id, name }) => ({
+    id,
+    name,
+    category: "rdpk",
+  }));
 }
 
 export function createRuleContext(node: TextNode): RuleContext {
@@ -65,6 +69,7 @@ export function lintText(
     for (const hit of rule.check(text, context)) {
       issues.push({
         ...hit,
+        issueKind: "text",
         severity: rule.severity,
         type: rule.type,
         ruleName: rule.name,

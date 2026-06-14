@@ -1,3 +1,5 @@
+import type { PluginSettings, RuleCatalogEntry, RuleCategory } from "@shared/types";
+
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -8,13 +10,26 @@ import {
   FieldLabel,
   FieldTitle,
 } from "@/components/ui/field";
-import type { PluginSettings, RuleCatalogEntry } from "@shared/types";
 
 type SettingsViewProps = {
   rulesCatalog: RuleCatalogEntry[];
   settings: PluginSettings;
   onChange: (enabledRuleIds: string[]) => void;
 };
+
+const CATEGORY_SECTIONS: { category: RuleCategory; title: string }[] = [
+  { category: "rdpk", title: "Редполитика" },
+  { category: "spell", title: "Орфография" },
+  { category: "figma", title: "Figma" },
+];
+
+function getRuleDescription(rule: RuleCatalogEntry): string {
+  if (rule.category === "figma" && rule.guide?.[0]) {
+    return rule.guide[0];
+  }
+
+  return rule.id;
+}
 
 export function SettingsView({
   rulesCatalog,
@@ -73,33 +88,50 @@ export function SettingsView({
         </p>
       ) : null}
 
-      <FieldGroup data-slot="checkbox-group" className="gap-3">
-        {rulesCatalog.map((rule) => {
-          const checked = enabledSet.has(rule.id);
-          const checkboxId = `rule-${rule.id}`;
+      {CATEGORY_SECTIONS.map(({ category, title }) => {
+        const sectionRules = rulesCatalog.filter(
+          (rule) => rule.category === category,
+        );
 
-          return (
-            <FieldLabel key={rule.id} htmlFor={checkboxId}>
-              <Field orientation="horizontal">
-                <Checkbox
-                  id={checkboxId}
-                  name={checkboxId}
-                  checked={checked}
-                  onCheckedChange={(value) =>
-                    toggleRule(rule.id, value === true)
-                  }
-                />
-                <FieldContent>
-                  <FieldTitle className="text-[12px]">{rule.name}</FieldTitle>
-                  <FieldDescription className="text-[10px]">
-                    {rule.id}
-                  </FieldDescription>
-                </FieldContent>
-              </Field>
-            </FieldLabel>
-          );
-        })}
-      </FieldGroup>
+        if (sectionRules.length === 0) {
+          return null;
+        }
+
+        return (
+          <div key={category} className="flex flex-col gap-2">
+            <p className="text-[11px] font-medium">{title}</p>
+            <FieldGroup data-slot="checkbox-group" className="gap-3">
+              {sectionRules.map((rule) => {
+                const checked = enabledSet.has(rule.id);
+                const checkboxId = `rule-${rule.id}`;
+
+                return (
+                  <FieldLabel key={rule.id} htmlFor={checkboxId}>
+                    <Field orientation="horizontal">
+                      <Checkbox
+                        id={checkboxId}
+                        name={checkboxId}
+                        checked={checked}
+                        onCheckedChange={(value) =>
+                          toggleRule(rule.id, value === true)
+                        }
+                      />
+                      <FieldContent>
+                        <FieldTitle className="text-[12px]">
+                          {rule.name}
+                        </FieldTitle>
+                        <FieldDescription className="text-[10px]">
+                          {getRuleDescription(rule)}
+                        </FieldDescription>
+                      </FieldContent>
+                    </Field>
+                  </FieldLabel>
+                );
+              })}
+            </FieldGroup>
+          </div>
+        );
+      })}
     </div>
   );
 }

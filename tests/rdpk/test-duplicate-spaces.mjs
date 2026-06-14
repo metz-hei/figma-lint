@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна duplicate-spaces (дублирует src/rules/duplicate-spaces.ts). */
+/** Smoke-test для паттерна duplicate-spaces (дублирует src/rdpk/duplicate-spaces.ts). */
 const DUPLICATE_SPACES_REGEX = /[ \u00A0\u202F\t]{2,}/g;
 
 function check(text) {

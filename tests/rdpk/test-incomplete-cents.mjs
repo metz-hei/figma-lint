@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна incomplete-cents (дублирует src/rules/incomplete-cents.ts). */
+/** Smoke-test для паттерна incomplete-cents (дублирует src/rdpk/incomplete-cents.ts). */
 const INCOMPLETE_CENTS_REGEX =
   /(\d[\d\s]*),([1-9])(?!\d)(\s*[₽$€¥£₸₼])/g;
 

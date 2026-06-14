@@ -1,6 +1,10 @@
 export type LintSeverity = "error" | "warning";
 
-export type LintType = "Редполитика" | "Ошибка набора";
+export type LintType = "Редполитика" | "Ошибка набора" | "Figma";
+
+export type IssueKind = "text" | "node";
+
+export type RuleCategory = "rdpk" | "figma" | "spell";
 
 export type LintIssue = {
   ruleId: string;
@@ -9,6 +13,7 @@ export type LintIssue = {
   message: string;
   severity: LintSeverity;
   type: LintType;
+  issueKind: IssueKind;
   nodeId: string;
   nodeName: string;
   text: string;
@@ -33,13 +38,48 @@ export type Rule = {
   guide: string[];
   check: (text: string, context: RuleContext) => Omit<
     LintIssue,
-    "nodeId" | "nodeName" | "text" | "ruleName" | "ruleGuide" | "severity" | "type"
+    | "nodeId"
+    | "nodeName"
+    | "text"
+    | "ruleName"
+    | "ruleGuide"
+    | "severity"
+    | "type"
+    | "issueKind"
   >[];
+};
+
+export type FigmaRuleContext = {
+  variablesById: ReadonlyMap<string, { name: string }>;
+};
+
+export type FigmaRuleHit = Omit<
+  LintIssue,
+  | "nodeId"
+  | "nodeName"
+  | "text"
+  | "ruleName"
+  | "ruleGuide"
+  | "severity"
+  | "type"
+  | "issueKind"
+>;
+
+export type FigmaRule = {
+  id: string;
+  name: string;
+  severity: LintSeverity;
+  type: LintType;
+  category: "figma";
+  guide: string[];
+  check: (node: SceneNode, context: FigmaRuleContext) => FigmaRuleHit[];
 };
 
 export type RuleCatalogEntry = {
   id: string;
   name: string;
+  category: RuleCategory;
+  guide?: string[];
 };
 
 export type PluginSettings = {

@@ -1,13 +1,28 @@
-import { readdirSync } from "node:fs";
+import { readdirSync, statSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const testsDir = join(dirname(fileURLToPath(import.meta.url)), "..", "tests");
 
-const files = readdirSync(testsDir)
-  .filter((file) => file.endsWith(".mjs"))
-  .sort();
+function collectTestFiles(dir) {
+  const files = [];
+
+  for (const entry of readdirSync(dir)) {
+    const fullPath = join(dir, entry);
+    if (statSync(fullPath).isDirectory()) {
+      files.push(...collectTestFiles(fullPath));
+      continue;
+    }
+    if (entry.endsWith(".mjs")) {
+      files.push(fullPath);
+    }
+  }
+
+  return files.sort();
+}
+
+const files = collectTestFiles(testsDir);
 
 if (files.length === 0) {
   console.error("No test files found in tests/");
@@ -17,9 +32,10 @@ if (files.length === 0) {
 let failed = 0;
 
 for (const file of files) {
-  console.log(`\n▶ ${file}\n`);
+  const relative = file.slice(testsDir.length + 1);
+  console.log(`\n▶ ${relative}\n`);
 
-  const result = spawnSync(process.execPath, [join(testsDir, file)], {
+  const result = spawnSync(process.execPath, [file], {
     stdio: "inherit",
   });
 

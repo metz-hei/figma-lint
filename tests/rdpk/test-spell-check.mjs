@@ -1,5 +1,5 @@
 /**
- * Smoke-test для орфографии (дублирует src/spell/* и src/rules/spell-check.ts).
+ * Smoke-test для орфографии (дублирует src/spell/* и src/rdpk/spell-check.ts).
  */
 const CUSTOM_WORDS = ["Тинькофф", "СБП"];
 

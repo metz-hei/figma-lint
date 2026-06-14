@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна email (дублирует src/rules/email.ts). */
+/** Smoke-test для паттерна email (дублирует src/rdpk/email.ts). */
 const EMAIL_REGEX = /\b(?:e-?mail)\b/gi;
 
 function emailReplacement(match) {

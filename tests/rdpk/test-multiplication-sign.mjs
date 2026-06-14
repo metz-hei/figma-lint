@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна multiplication-sign (дублирует src/rules/multiplication-sign.ts). */
+/** Smoke-test для паттерна multiplication-sign (дублирует src/rdpk/multiplication-sign.ts). */
 const WRONG_MULTIPLY_REGEX = /(\d+)\s*(?:[хХ*]|\s×|×\s)\s*(\d+)/g;
 
 function check(text) {

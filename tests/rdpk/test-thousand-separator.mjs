@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна thousand-separator (дублирует src/rules/thousand-separator.ts). */
+/** Smoke-test для паттерна thousand-separator (дублирует src/rdpk/thousand-separator.ts). */
 const NBSP = "\u00A0";
 const NARROW_NBSP = "\u202F";
 

@@ -10,6 +10,25 @@ type RuleViewProps = {
   issue: LintIssue;
 };
 
+function renderCurrentIssue(issue: LintIssue) {
+  if (issue.issueKind === "node") {
+    return (
+      <>
+        {issue.match}
+        {issue.replacement ? ` → ${issue.replacement}` : null}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
+      {" → "}
+      {issue.replacement}
+    </>
+  );
+}
+
 export function RuleView({ issue }: RuleViewProps) {
   return (
     <div className="space-y-4 p-3">
@@ -46,9 +65,7 @@ export function RuleView({ issue }: RuleViewProps) {
           Текущая ошибка
         </p>
         <TypographyP className="mt-0 text-[11px] break-words [&:not(:first-child)]:mt-3">
-          <HighlightedIssueSnippet snippet={getIssueDisplaySnippet(issue)} />
-          {" → "}
-          {issue.replacement}
+          {renderCurrentIssue(issue)}
         </TypographyP>
         {issue.message ? (
           <TypographyP className="mt-0 text-[11px] break-words [&:not(:first-child)]:mt-3">

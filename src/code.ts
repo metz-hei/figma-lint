@@ -1,3 +1,4 @@
+import { lintAutoLayoutNodes } from "./figma-lint";
 import { lintTextNodes } from "./linter";
 import {
   getDefaultSettings,
@@ -5,7 +6,7 @@ import {
   normalizeSettings,
   SETTINGS_STORAGE_KEY,
 } from "./settings";
-import { spellCheckRule } from "./rules/spell-check";
+import { spellCheckRule } from "./rdpk/spell-check";
 import { lintTextNodesSpell } from "./spell-lint";
 import type {
   InitMessage,
@@ -78,9 +79,11 @@ async function runLint(): Promise<LintResultMessage> {
     );
   }
 
+  const figmaIssues = await lintAutoLayoutNodes(enabledRuleIds);
+
   return {
     type: "lint-result",
-    issues: [...syncIssues, ...spellIssues],
+    issues: [...syncIssues, ...spellIssues, ...figmaIssues],
     scanned: textNodes.length,
   };
 }

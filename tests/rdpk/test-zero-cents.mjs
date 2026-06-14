@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна zero-cents (дублирует src/rules/zero-cents.ts). */
+/** Smoke-test для паттерна zero-cents (дублирует src/rdpk/zero-cents.ts). */
 const ZERO_CENTS_REGEX = /,\s*0+(?=\s*[₽$€¥£₸₼])/g;
 
 function check(text) {

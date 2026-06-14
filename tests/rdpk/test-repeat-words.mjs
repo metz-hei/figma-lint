@@ -1,4 +1,4 @@
-/** Smoke-test для repeat-words (дублирует src/rules/repeat-words.ts). */
+/** Smoke-test для repeat-words (дублирует src/rdpk/repeat-words.ts). */
 const WORD_REGEX =
   /[а-яёА-ЯЁ]+(?:-[а-яёА-ЯЁ]+)*|[a-zA-Z]+(?:'[a-zA-Z]+)*/g;
 

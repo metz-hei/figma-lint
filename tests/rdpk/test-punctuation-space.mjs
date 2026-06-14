@@ -1,4 +1,4 @@
-/** Smoke-test для паттерна punctuation-space (дублирует src/rules/punctuation-space.ts). */
+/** Smoke-test для паттерна punctuation-space (дублирует src/rdpk/punctuation-space.ts). */
 const WS = "[ \\u00A0\\u202F\\t]+";
 const PUNCT_REGEX = new RegExp(`(\\S)${WS}([!.?,;:\\u2026])`, "g");
 

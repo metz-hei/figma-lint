@@ -1,34 +1,33 @@
-/** Smoke-test для паттерна currency-space (дублирует src/rules/currency-space.ts). */
-const CURRENCY_SPACE_REGEX = /\d[₽$€¥£₸₼]/g;
+/** Smoke-test для паттерна negative-minus (дублирует src/rdpk/negative-minus.ts). */
+const WRONG_MINUS_REGEX = /(?<!\d)(?:-|−|—)(?=\d)/g;
 
 function check(text) {
-  return [...text.matchAll(CURRENCY_SPACE_REGEX)];
+  return [...text.matchAll(WRONG_MINUS_REGEX)];
 }
 
 function getFixedText(text, match) {
-  const digit = match[0][0];
-  const currency = match[0].slice(1);
   return (
     text.slice(0, match.index) +
-    `${digit} ${currency}` +
+    "–" +
     text.slice(match.index + match[0].length)
   );
 }
 
 const cases = [
-  { text: "50₽", expect: true },
-  { text: "99€", expect: true },
-  { text: "100$", expect: true },
-  { text: "100¥", expect: true },
-  { text: "50£", expect: true },
-  { text: "1000₸", expect: true },
-  { text: "25₼", expect: true },
-  { text: "50,50₽", expect: true },
-  { text: "Цена: 50₽", expect: true },
-  { text: "50 ₽", expect: false },
-  { text: "99,00 €", expect: false },
-  { text: "100 ¥", expect: false },
-  { text: "50,50 ₽", expect: false },
+  { text: "-50", expect: true },
+  { text: "-50 444", expect: true },
+  { text: "-50%", expect: true },
+  { text: "- 50", expect: false },
+  { text: "— 50", expect: false },
+  { text: "−50", expect: true },
+  { text: "—50", expect: true },
+  { text: "Баланс: -50 ₽", expect: true },
+  { text: "–50", expect: false },
+  { text: "–50 444", expect: false },
+  { text: "–50%", expect: false },
+  { text: "50-100", expect: false },
+  { text: "2024-06-02", expect: false },
+  { text: "50", expect: false },
 ];
 
 let failed = 0;
@@ -51,10 +50,10 @@ if (failed > 0) {
 console.log(`\n${cases.length} cases passed`);
 
 const fixCases = [
-  { text: "50₽", fixed: "50 ₽" },
-  { text: "99€", fixed: "99 €" },
-  { text: "100¥", fixed: "100 ¥" },
-  { text: "50,50₽", fixed: "50,50 ₽" },
+  { text: "-50", fixed: "–50" },
+  { text: "-50 444", fixed: "–50 444" },
+  { text: "-50%", fixed: "–50%" },
+  { text: "Баланс: -50 ₽", fixed: "Баланс: –50 ₽" },
 ];
 
 for (const { text, fixed } of fixCases) {

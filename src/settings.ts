@@ -1,5 +1,6 @@
+import { getFigmaRulesCatalog } from "./figma-lint";
 import { getRulesCatalog } from "./linter";
-import { spellCheckRule } from "./rules/spell-check";
+import { spellCheckRule } from "./rdpk/spell-check";
 import type { PluginSettings, RuleCatalogEntry } from "./types";
 
 export const SETTINGS_STORAGE_KEY = "figma-lint-enabled-rules";
@@ -7,7 +8,12 @@ export const SETTINGS_STORAGE_KEY = "figma-lint-enabled-rules";
 export function getFullRulesCatalog(): RuleCatalogEntry[] {
   return [
     ...getRulesCatalog(),
-    { id: spellCheckRule.id, name: spellCheckRule.name },
+    {
+      id: spellCheckRule.id,
+      name: spellCheckRule.name,
+      category: "spell",
+    },
+    ...getFigmaRulesCatalog(),
   ];
 }
 

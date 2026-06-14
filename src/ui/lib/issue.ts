@@ -31,5 +31,15 @@ export function getIssueSnippet(
 }
 
 export function getIssueDisplaySnippet(issue: LintIssue): IssueSnippet {
+  if (issue.issueKind === "node") {
+    return {
+      text: issue.match,
+      start: 0,
+      end: issue.match.length,
+      prefixEllipsis: false,
+      suffixEllipsis: false,
+    };
+  }
+
   return getIssueSnippet(issue.text, issue.start, issue.end);
 }
