@@ -8,6 +8,7 @@ import { smsRule } from "./rdpk/sms";
 import { lowercaseVyRule } from "./rdpk/lowercase-vy";
 import { multiplicationSignRule } from "./rdpk/multiplication-sign";
 import { negativeMinusRule } from "./rdpk/negative-minus";
+import { signedAmountRule } from "./rdpk/signed-amount";
 import { punctuationSpaceRule } from "./rdpk/punctuation-space";
 import { repeatWordsRule } from "./rdpk/repeat-words";
 import { thousandSeparatorRule } from "./rdpk/thousand-separator";
@@ -21,6 +22,7 @@ const RULES: Rule[] = [
   currencySpaceRule,
   thousandSeparatorRule,
   negativeMinusRule,
+  signedAmountRule,
   multiplicationSignRule,
   emailRule,
   smsRule,
