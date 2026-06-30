@@ -2,6 +2,7 @@ import { Settings } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import type {
+  FixResultMessage,
   InitMessage,
   LintIssue,
   LintResultMessage,
@@ -9,7 +10,7 @@ import type {
   SettingsUpdatedMessage,
 } from "@shared/types";
 
-import { IssuesList } from "@/components/IssuesList";
+import { IssuesList, getIssueFixKey } from "@/components/IssuesList";
 import { RuleView } from "@/components/RuleView";
 import { SettingsView } from "@/components/SettingsView";
 import { Button } from "@/components/ui/button";
@@ -55,18 +56,25 @@ export default function App() {
   const [settings, setSettings] = useState<PluginSettings>({
     enabledRuleIds: [],
   });
+  const [fixingKey, setFixingKey] = useState<string | null>(null);
+  const [fixError, setFixError] = useState<string | null>(null);
 
   const applyResult = useCallback((payload: LintResultMessage) => {
     setIssues(payload.issues);
     setScanned(payload.scanned);
     setLoading(false);
+    setFixingKey(null);
+    setFixError(null);
     setView((current) => (current === "settings" ? current : "issues"));
     setActiveIssue(null);
   }, []);
 
   useEffect(() => {
     return onPluginMessage<
-      InitMessage | LintResultMessage | SettingsUpdatedMessage
+      | InitMessage
+      | LintResultMessage
+      | SettingsUpdatedMessage
+      | FixResultMessage
     >((message) => {
       if (message.type === "init") {
         setRulesCatalog(message.rulesCatalog);
@@ -76,6 +84,14 @@ export default function App() {
 
       if (message.type === "settings-updated") {
         setSettings(message.settings);
+        return;
+      }
+
+      if (message.type === "fix-result") {
+        setFixingKey(null);
+        if (!message.ok) {
+          setFixError(message.error ?? "Не удалось применить правку");
+        }
         return;
       }
 
@@ -99,6 +115,12 @@ export default function App() {
     setView("rule");
   };
 
+  const handleFixIssue = (issue: LintIssue) => {
+    setFixError(null);
+    setFixingKey(getIssueFixKey(issue));
+    postToPlugin({ type: "fix-issue", issue });
+  };
+
   const handleSettingsChange = (enabledRuleIds: string[]) => {
     setSettings({ enabledRuleIds });
     setLoading(true);
@@ -118,7 +140,9 @@ export default function App() {
         <div className="min-w-0">
           <h1 className="text-[13px] font-semibold">{headerTitle}</h1>
           <p className="text-muted-foreground text-[11px]">
-            {loading ? "Сканирование…" : formatSummary(issues, scanned)}
+            {loading
+              ? "Сканирование…"
+              : fixError ?? formatSummary(issues, scanned)}
           </p>
         </div>
         {view === "issues" ? (
@@ -156,6 +180,8 @@ export default function App() {
             issues={issues}
             onSelectNode={handleSelectNode}
             onOpenRule={handleOpenRule}
+            onFixIssue={handleFixIssue}
+            fixingKey={fixingKey}
           />
         )}
       </ScrollArea>

@@ -1,3 +1,4 @@
+import { isWrongCashback } from "./cashback";
 import { isCustomWord } from "../spell/checker";
 import { shouldSkipToken } from "../spell/skip";
 import type { YandexSpellError } from "../spell/yandex";
@@ -11,7 +12,7 @@ export const spellCheckRule = {
   guide: [
     "Возможная опечатка — проверьте глазами. Это предупреждение, а не нарушение редполитики.",
     "Проверка через Яндекс.Спеллер (русский и английский). Тексты отправляются на сервер Яндекса.",
-    "Бренды и внутренние термины добавляйте в кастомный справочник (src/spell/custom-words.ts).",
+    "Бренды и внутренние термины — в src/spell/custom-words.txt (одно слово на строку; после слова строки «-а», «-у» и т.п. — допустимые окончания).",
   ],
 } satisfies Pick<Rule, "id" | "name" | "severity" | "type" | "guide">;
 
@@ -30,6 +31,7 @@ export function mapSpellErrors(
     const end = pos + len;
 
     if (isCustomWord(word)) continue;
+    if (isWrongCashback(word)) continue;
     if (shouldSkipToken(word, text, start, end)) continue;
 
     const replacement = suggestions[0] ?? "";

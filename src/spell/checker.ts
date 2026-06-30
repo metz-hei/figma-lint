@@ -1,4 +1,4 @@
-import { CUSTOM_WORDS } from "./custom-words";
+import { isCustomWordMatch } from "./custom-words";
 import { checkTextsYandex, type YandexSpellError } from "./yandex";
 
 const CYRILLIC_REGEX = /[а-яёА-ЯЁ]/;
@@ -11,10 +11,6 @@ export type SpellCheckResult = {
   error?: string;
 };
 
-const customWords = new Set(
-  CUSTOM_WORDS.map((word) => word.toLocaleLowerCase("ru")),
-);
-
 export function detectLanguage(word: string): SpellLanguage | null {
   const hasCyrillic = CYRILLIC_REGEX.test(word);
   const hasLatin = LATIN_REGEX.test(word);
@@ -26,7 +22,7 @@ export function detectLanguage(word: string): SpellLanguage | null {
 }
 
 export function isCustomWord(word: string): boolean {
-  return customWords.has(word.toLocaleLowerCase("ru"));
+  return isCustomWordMatch(word);
 }
 
 export async function checkTextsSpell(

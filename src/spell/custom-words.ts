@@ -1,5 +1,12 @@
-/** Слова, которые не проверяем орфографией (бренды, термины, жаргон). */
-export const CUSTOM_WORDS = [
-  "Тинькофф",
-  "СБП",
-] as const;
+import wordsRaw from "./custom-words.txt";
+import {
+  createCustomWordMatcher,
+  parseCustomWords,
+} from "./custom-words-parse.mjs";
+
+const parsed = parseCustomWords(wordsRaw);
+
+/** Точные записи из справочника (без строк «-окончание»). */
+export const CUSTOM_WORDS = parsed.exact;
+
+export const isCustomWordMatch = createCustomWordMatcher(parsed);

@@ -25,6 +25,9 @@ const NUMBER_REGEX =
 /** Даты вида 12.12.2004 — точки не тысячные разделители. */
 const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
 
+/** Телефоны, коды: 0642-58-51325, 12/20092355 — дефис и / не тысячные разделители. */
+const DELIMITED_DIGITS_REGEX = /\d+(?:[–−—/-]\d+)+/g;
+
 function isPartOfDate(text: string, start: number, end: number): boolean {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
     if (dateMatch.index === undefined) continue;
@@ -32,6 +35,18 @@ function isPartOfDate(text: string, start: number, end: number): boolean {
     const dateStart = dateMatch.index;
     const dateEnd = dateStart + dateMatch[0].length;
     if (start >= dateStart && end <= dateEnd) return true;
+  }
+
+  return false;
+}
+
+function isPartOfDelimitedDigits(text: string, start: number, end: number): boolean {
+  for (const digitMatch of text.matchAll(DELIMITED_DIGITS_REGEX)) {
+    if (digitMatch.index === undefined) continue;
+
+    const digitStart = digitMatch.index;
+    const digitEnd = digitStart + digitMatch[0].length;
+    if (start >= digitStart && end <= digitEnd) return true;
   }
 
   return false;
@@ -110,7 +125,13 @@ export const thousandSeparatorRule: Rule = {
       const start = match.index;
       const end = start + match[0].length;
 
-      if (isPartOfDate(text, start, end) || isLongDigitRun(body)) continue;
+      if (
+        isPartOfDate(text, start, end) ||
+        isPartOfDelimitedDigits(text, start, end) ||
+        isLongDigitRun(body)
+      ) {
+        continue;
+      }
 
       const fixed = formatNumberToken(sign, body);
       if (!fixed) continue;

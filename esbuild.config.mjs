@@ -20,6 +20,9 @@ const buildOptions = {
   outfile: "dist/code.js",
   target: "es2017",
   logLevel: "info",
+  loader: {
+    ".txt": "text",
+  },
   define: {
     __html__: uiHtml,
   },

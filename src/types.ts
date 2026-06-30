@@ -107,3 +107,14 @@ export type LintResultMessage = {
   issues: LintIssue[];
   scanned: number;
 };
+
+export type FixIssueMessage = {
+  type: "fix-issue";
+  issue: LintIssue;
+};
+
+export type FixResultMessage = {
+  type: "fix-result";
+  ok: boolean;
+  error?: string;
+};

@@ -1,3 +1,4 @@
+import { applyTextReplacement, isFixable } from "./fix";
 import { lintAutoLayoutNodes } from "./figma-lint";
 import { lintTextNodes } from "./linter";
 import {
@@ -9,7 +10,9 @@ import {
 import { spellCheckRule } from "./rdpk/spell-check";
 import { lintTextNodesSpell } from "./spell-lint";
 import type {
+  FixResultMessage,
   InitMessage,
+  LintIssue,
   LintResultMessage,
   PluginSettings,
   SettingsUpdatedMessage,
@@ -97,10 +100,48 @@ function postInit(): void {
   figma.ui.postMessage(message);
 }
 
+async function loadFontsForTextNode(node: TextNode): Promise<void> {
+  const fonts = node.getRangeAllFontNames(0, node.characters.length);
+  await Promise.all(fonts.map((font) => figma.loadFontAsync(font)));
+}
+
+async function applyTextFix(issue: LintIssue): Promise<FixResultMessage> {
+  if (!isFixable(issue)) {
+    return { type: "fix-result", ok: false, error: "Правку нельзя применить" };
+  }
+
+  const node = await figma.getNodeByIdAsync(issue.nodeId);
+  if (!node || node.type !== "TEXT") {
+    return { type: "fix-result", ok: false, error: "Текстовый слой не найден" };
+  }
+
+  const newText = applyTextReplacement(node.characters, issue);
+  if (newText === null) {
+    return {
+      type: "fix-result",
+      ok: false,
+      error: "Текст изменился, пересканируйте",
+    };
+  }
+
+  try {
+    await loadFontsForTextNode(node);
+    node.characters = newText;
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Не удалось применить правку";
+    figma.notify(message, { error: true });
+    return { type: "fix-result", ok: false, error: message };
+  }
+
+  return { type: "fix-result", ok: true };
+}
+
 figma.ui.onmessage = (msg: {
   type: string;
   nodeId?: string;
   enabledRuleIds?: string[];
+  issue?: LintIssue;
 }) => {
   if (msg.type === "close") {
     figma.closePlugin();
@@ -128,6 +169,19 @@ figma.ui.onmessage = (msg: {
 
   if (msg.type === "select-node" && msg.nodeId) {
     void selectNodeById(msg.nodeId);
+    return;
+  }
+
+  if (msg.type === "fix-issue" && msg.issue) {
+    void applyTextFix(msg.issue)
+      .then((result) => {
+        figma.ui.postMessage(result);
+        if (!result.ok) return undefined;
+        return runLint();
+      })
+      .then((lintResult) => {
+        if (lintResult) figma.ui.postMessage(lintResult);
+      });
   }
 };
 

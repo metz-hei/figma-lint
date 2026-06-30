@@ -1,7 +1,21 @@
 /**
  * Smoke-test для орфографии (дублирует src/spell/* и src/rdpk/spell-check.ts).
  */
-const CUSTOM_WORDS = ["Тинькофф", "СБП"];
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  createCustomWordMatcher,
+  parseCustomWords,
+} from "../../src/spell/custom-words-parse.mjs";
+
+const customWordsPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../src/spell/custom-words.txt",
+);
+const isCustomWord = createCustomWordMatcher(
+  parseCustomWords(readFileSync(customWordsPath, "utf8")),
+);
 
 const URL_REGEX = /^https?:\/\//i;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,10 +37,6 @@ function isInsideSpan(text, start, end, regex) {
   return false;
 }
 
-const customWords = new Set(
-  CUSTOM_WORDS.map((word) => word.toLocaleLowerCase("ru")),
-);
-
 function shouldSkipToken(word, text, start, end) {
   if (word.length < 2) return true;
   if (/^\d+$/.test(word)) return true;
@@ -42,10 +52,6 @@ function shouldSkipToken(word, text, start, end) {
   }
 
   return false;
-}
-
-function isCustomWord(word) {
-  return customWords.has(word.toLocaleLowerCase("ru"));
 }
 
 function mapSpellErrors(text, apiErrors) {
@@ -121,6 +127,26 @@ const API_RESPONSES = {
       s: [],
     },
   ],
+  "мультихолдинга и мультихолдингу": [
+    {
+      code: 1,
+      pos: 0,
+      row: 0,
+      col: 0,
+      len: 13,
+      word: "мультихолдинга",
+      s: [],
+    },
+    {
+      code: 1,
+      pos: 17,
+      row: 0,
+      col: 17,
+      len: 13,
+      word: "мультихолдингу",
+      s: [],
+    },
+  ],
   "Используйте API": [],
   "Напишите на test@mail.ru": [],
   "Привет, {{name}}": [],
@@ -154,6 +180,7 @@ const cases = [
   { text: "привет мир", expectIssues: 0 },
   { text: "Оплата через Тинькофф", expectIssues: 0 },
   { text: "Перевод по СБП", expectIssues: 0 },
+  { text: "мультихолдинга и мультихолдингу", expectIssues: 0 },
   { text: "Используйте API", expectIssues: 0 },
   { text: "Напишите на test@mail.ru", expectIssues: 0 },
   { text: "Привет, {{name}}", expectIssues: 0 },

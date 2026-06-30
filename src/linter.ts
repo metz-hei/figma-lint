@@ -5,6 +5,7 @@ import { decimalCommaRule } from "./rdpk/decimal-comma";
 import { duplicateSpacesRule } from "./rdpk/duplicate-spaces";
 import { emailRule } from "./rdpk/email";
 import { smsRule } from "./rdpk/sms";
+import { cashbackRule } from "./rdpk/cashback";
 import { lowercaseVyRule } from "./rdpk/lowercase-vy";
 import { multiplicationSignRule } from "./rdpk/multiplication-sign";
 import { negativeMinusRule } from "./rdpk/negative-minus";
@@ -26,6 +27,7 @@ const RULES: Rule[] = [
   multiplicationSignRule,
   emailRule,
   smsRule,
+  cashbackRule,
   lowercaseVyRule,
   duplicateSpacesRule,
   punctuationSpaceRule,
