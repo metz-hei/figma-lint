@@ -26,8 +26,7 @@ export const cashbackRule: Rule = {
   severity: "error",
   type: "Редполитика",
   guide: [
-    "Слово «кешбэк» пишем с «е» в первом слоге: Кешбэк, кешбэка, кешбэку.",
-    "Не «кэшбэк» и не «кешбек».",
+    "Слово «кешбэк» пишем с «е» в первом слоге: кешбэк.",
   ],
   check(text, _context) {
     const issues: ReturnType<Rule["check"]> = [];
