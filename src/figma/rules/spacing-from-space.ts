@@ -1,4 +1,4 @@
-import type { FigmaRule, FigmaRuleContext, FigmaRuleHit } from "../types";
+import type { FigmaRule, FigmaRuleContext, FigmaRuleHit } from "../../types";
 
 /**
  * Ловит gap и padding без токена из группы Space: «gap: 16» вместо «Space-4», «padding top: 8» без variable и т.п.
@@ -27,7 +27,8 @@ const FIELD_LABELS: Record<SpacingField, string> = {
 };
 
 type AutoLayoutNode = SceneNode &
-  AutoLayoutMixin & {
+  AutoLayoutMixin &
+  GridLayoutMixin & {
     boundVariables?: {
       itemSpacing?: VariableAlias;
       counterAxisSpacing?: VariableAlias;
@@ -166,7 +167,7 @@ export const spacingFromSpaceRule = {
     const ruleId = spacingFromSpaceRule.id;
 
     for (const field of getSpacingFieldsForNode(node)) {
-      const value = node[field];
+      const value = node[field] ?? 0;
       const boundVariableId = getBoundVariableId(node, field);
       const hit = checkSpacingBinding(
         ruleId,

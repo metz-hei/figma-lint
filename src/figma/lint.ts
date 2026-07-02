@@ -1,12 +1,23 @@
 import type {
+  FigmaRule,
   FigmaRuleContext,
   LintIssue,
   RuleCatalogEntry,
 } from "../types";
 import { isEffectivelyVisible } from "../visibility";
+import { ColorTokenCheck } from "./rules/color-token-check";
 import { spacingFromSpaceRule } from "./rules/spacing-from-space";
+import { UnusedGapCheck } from "./rules/unused-gap-check";
 
-const FIGMA_RULES = [spacingFromSpaceRule];
+type FigmaRuleHitWithNode = ReturnType<FigmaRule["check"]>[number] & {
+  node?: SceneNode;
+};
+
+const FIGMA_RULES: FigmaRule[] = [
+  spacingFromSpaceRule,
+  UnusedGapCheck,
+  ColorTokenCheck,
+];
 
 export function getFigmaRulesCatalog(): RuleCatalogEntry[] {
   return FIGMA_RULES.map(({ id, name, category, guide }) => ({
@@ -27,24 +38,33 @@ export function lintSceneNodes(
       ? FIGMA_RULES
       : FIGMA_RULES.filter((rule) => enabledRuleIds.has(rule.id));
 
-  return nodes.flatMap((node) => {
+  const issues: LintIssue[] = [];
+
+  for (const node of nodes) {
     if (!isEffectivelyVisible(node)) {
-      return [];
+      continue;
     }
 
-    return rules.flatMap((rule) =>
-      rule.check(node, context).map((hit) => ({
-        ...hit,
-        ruleId: rule.id,
-        issueKind: "node" as const,
-        severity: rule.severity,
-        type: rule.type,
-        ruleName: rule.name,
-        ruleGuide: rule.guide,
-        nodeId: node.id,
-        nodeName: node.name,
-        text: "",
-      })),
-    );
-  });
+    for (const rule of rules) {
+      for (const hit of rule.check(node, context)) {
+        const { node: hitNode, ...publicHit } = hit as FigmaRuleHitWithNode;
+        const issueNode = hitNode ?? node;
+
+        issues.push({
+          ...publicHit,
+          ruleId: rule.id,
+          issueKind: "node" as const,
+          severity: rule.severity,
+          type: rule.type,
+          ruleName: rule.name,
+          ruleGuide: rule.guide,
+          nodeId: issueNode.id,
+          nodeName: issueNode.name,
+          text: "",
+        });
+      }
+    }
+  }
+
+  return issues;
 }
