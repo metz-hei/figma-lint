@@ -28,6 +28,10 @@ const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
 /** Телефоны, коды: 0642-58-51325, 12/20092355 — дефис и / не тысячные разделители. */
 const DELIMITED_DIGITS_REGEX = /\d+(?:[–−—/-]\d+)+/g;
 
+/** Маска расчётного счёта: 40802 810 3 0000 0083730. */
+const BANK_ACCOUNT_MASK_REGEX =
+  /\d{5}[ \u00A0\u202F]\d{3}[ \u00A0\u202F]\d[ \u00A0\u202F]\d{4}[ \u00A0\u202F]\d{7}/g;
+
 function isPartOfDate(text: string, start: number, end: number): boolean {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
     if (dateMatch.index === undefined) continue;
@@ -52,9 +56,41 @@ function isPartOfDelimitedDigits(text: string, start: number, end: number): bool
   return false;
 }
 
+function isPartOfBankAccountMask(text: string, start: number, end: number): boolean {
+  for (const maskMatch of text.matchAll(BANK_ACCOUNT_MASK_REGEX)) {
+    if (maskMatch.index === undefined) continue;
+
+    const maskStart = maskMatch.index;
+    const maskEnd = maskStart + maskMatch[0].length;
+    if (start >= maskStart && end <= maskEnd) return true;
+  }
+
+  return false;
+}
+
 /** ИНН и прочие идентификаторы: 10+ цифр подряд без разделителей. */
 function isLongDigitRun(body: string): boolean {
   return /\d{10,}/.test(body);
+}
+
+/** Годы 2001–2029 без дробной части — не отбиваем разряды. */
+function isYearToken(body: string): boolean {
+  const parsed = parseNumberBody(body);
+  if (!parsed || parsed.frac !== undefined) return false;
+
+  const { intDigits } = parsed;
+  if (!/^\d{4}$/.test(intDigits)) return false;
+
+  const year = Number(intDigits);
+  return year >= 2001 && year <= 2029;
+}
+
+/** Счета и коды с ведущим нулём: 0083730, 0000. */
+function isLeadingZeroAmount(body: string): boolean {
+  const parsed = parseNumberBody(body);
+  if (!parsed) return false;
+
+  return parsed.intDigits.startsWith("0");
 }
 
 function parseNumberBody(body: string): { intDigits: string; frac?: string } | null {
@@ -128,7 +164,10 @@ export const thousandSeparatorRule: Rule = {
       if (
         isPartOfDate(text, start, end) ||
         isPartOfDelimitedDigits(text, start, end) ||
-        isLongDigitRun(body)
+        isPartOfBankAccountMask(text, start, end) ||
+        isLongDigitRun(body) ||
+        isYearToken(body) ||
+        isLeadingZeroAmount(body)
       ) {
         continue;
       }

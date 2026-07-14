@@ -4,6 +4,9 @@ const EMAIL_IN_TEXT_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/g;
 const URL_IN_TEXT_REGEX = /https?:\/\/[^\s]+/gi;
 const PLACEHOLDER_REGEX = /^(?:\{\{[^}]+\}\}|%[sd]|%\d+\$[sd]|\{[0-9]+\})$/;
 const ALL_CAPS_REGEX = /^[A-Z]{2,}$/;
+/** camelCase и PascalCase: colorBackground, ColorBackground */
+const CAMEL_CASE_REGEX =
+  /^[a-z]+(?:[A-Z][a-z0-9]*)+$|^[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+$/;
 const HAS_DIGIT_REGEX = /\d/;
 
 function isInsideSpan(
@@ -36,6 +39,7 @@ function shouldSkipByContext(
   if (EMAIL_REGEX.test(word)) return true;
   if (PLACEHOLDER_REGEX.test(word)) return true;
   if (skipAllCaps && ALL_CAPS_REGEX.test(word)) return true;
+  if (CAMEL_CASE_REGEX.test(word)) return true;
   if (HAS_DIGIT_REGEX.test(word)) return true;
 
   if (text !== undefined && start !== undefined && end !== undefined) {

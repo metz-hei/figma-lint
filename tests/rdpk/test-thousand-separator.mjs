@@ -7,6 +7,8 @@ const NUMBER_REGEX =
 
 const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
 const DELIMITED_DIGITS_REGEX = /\d+(?:[–−—/-]\d+)+/g;
+const BANK_ACCOUNT_MASK_REGEX =
+  /\d{5}[ \u00A0\u202F]\d{3}[ \u00A0\u202F]\d[ \u00A0\u202F]\d{4}[ \u00A0\u202F]\d{7}/g;
 
 function isPartOfDate(text, start, end) {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
@@ -32,8 +34,38 @@ function isPartOfDelimitedDigits(text, start, end) {
   return false;
 }
 
+function isPartOfBankAccountMask(text, start, end) {
+  for (const maskMatch of text.matchAll(BANK_ACCOUNT_MASK_REGEX)) {
+    if (maskMatch.index === undefined) continue;
+
+    const maskStart = maskMatch.index;
+    const maskEnd = maskStart + maskMatch[0].length;
+    if (start >= maskStart && end <= maskEnd) return true;
+  }
+
+  return false;
+}
+
 function isLongDigitRun(body) {
   return /\d{10,}/.test(body);
+}
+
+function isYearToken(body) {
+  const parsed = parseNumberBody(body);
+  if (!parsed || parsed.frac !== undefined) return false;
+
+  const { intDigits } = parsed;
+  if (!/^\d{4}$/.test(intDigits)) return false;
+
+  const year = Number(intDigits);
+  return year >= 2001 && year <= 2029;
+}
+
+function isLeadingZeroAmount(body) {
+  const parsed = parseNumberBody(body);
+  if (!parsed) return false;
+
+  return parsed.intDigits.startsWith("0");
 }
 
 function formatThousands(digits) {
@@ -106,7 +138,10 @@ function check(text) {
     if (
       isPartOfDate(text, start, end) ||
       isPartOfDelimitedDigits(text, start, end) ||
-      isLongDigitRun(body)
+      isPartOfBankAccountMask(text, start, end) ||
+      isLongDigitRun(body) ||
+      isYearToken(body) ||
+      isLeadingZeroAmount(body)
     ) {
       continue;
     }
@@ -146,6 +181,17 @@ const cases = [
   { text: "50–100", expect: false },
   { text: "12.12.2004", expect: false },
   { text: "до 01.01.2020 включительно", expect: false },
+  { text: "в 2024 году", expect: false },
+  { text: "2020", expect: false },
+  { text: "2001", expect: false },
+  { text: "2029", expect: false },
+  { text: "2000", expect: true },
+  { text: "2030", expect: true },
+  { text: "1999", expect: true },
+  { text: "0000", expect: false },
+  { text: "0083730", expect: false },
+  { text: "05000", expect: false },
+  { text: "40802 810 3 0000 0083730", expect: false },
   { text: "1234567890", expect: false },
   { text: "ИНН 1234567890", expect: false },
   { text: "0642-58-51325", expect: false },

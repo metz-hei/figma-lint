@@ -23,6 +23,8 @@ const EMAIL_IN_TEXT_REGEX = /[^\s@]+@[^\s@]+\.[^\s@]+/g;
 const URL_IN_TEXT_REGEX = /https?:\/\/[^\s]+/gi;
 const PLACEHOLDER_REGEX = /^(?:\{\{[^}]+\}\}|%[sd]|%\d+\$[sd]|\{[0-9]+\})$/;
 const ALL_CAPS_REGEX = /^[A-Z]{2,}$/;
+const CAMEL_CASE_REGEX =
+  /^[a-z]+(?:[A-Z][a-z0-9]*)+$|^[A-Z][a-z0-9]+(?:[A-Z][a-z0-9]*)+$/;
 const HAS_DIGIT_REGEX = /\d/;
 
 function isInsideSpan(text, start, end, regex) {
@@ -44,6 +46,7 @@ function shouldSkipToken(word, text, start, end) {
   if (EMAIL_REGEX.test(word)) return true;
   if (PLACEHOLDER_REGEX.test(word)) return true;
   if (ALL_CAPS_REGEX.test(word)) return true;
+  if (CAMEL_CASE_REGEX.test(word)) return true;
   if (HAS_DIGIT_REGEX.test(word)) return true;
 
   if (text !== undefined && start !== undefined && end !== undefined) {
@@ -162,6 +165,17 @@ const API_RESPONSES = {
       s: ["Api"],
     },
   ],
+  "Фон ColorBackground": [
+    {
+      code: 1,
+      pos: 4,
+      row: 0,
+      col: 4,
+      len: 15,
+      word: "ColorBackground",
+      s: [],
+    },
+  ],
 };
 
 const cases = [
@@ -186,6 +200,7 @@ const cases = [
   { text: "Привет, {{name}}", expectIssues: 0 },
   { text: "50,00 ₽", expectIssues: 0 },
   { text: "API", expectIssues: 0 },
+  { text: "Фон ColorBackground", expectIssues: 0 },
 ];
 
 let failed = 0;
