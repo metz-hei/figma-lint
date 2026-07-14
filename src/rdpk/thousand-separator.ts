@@ -32,6 +32,9 @@ const DELIMITED_DIGITS_REGEX = /\d+(?:[–−—/-]\d+)+/g;
 const BANK_ACCOUNT_MASK_REGEX =
   /\d{5}[ \u00A0\u202F]\d{3}[ \u00A0\u202F]\d[ \u00A0\u202F]\d{4}[ \u00A0\u202F]\d{7}/g;
 
+/** Hex-цвета: #ED8836, #fff. */
+const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{3,8}/g;
+
 function isPartOfDate(text: string, start: number, end: number): boolean {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
     if (dateMatch.index === undefined) continue;
@@ -68,9 +71,21 @@ function isPartOfBankAccountMask(text: string, start: number, end: number): bool
   return false;
 }
 
-/** ИНН и прочие идентификаторы: 10+ цифр подряд без разделителей. */
+function isPartOfHexColor(text: string, start: number, end: number): boolean {
+  for (const hexMatch of text.matchAll(HEX_COLOR_REGEX)) {
+    if (hexMatch.index === undefined) continue;
+
+    const hexStart = hexMatch.index;
+    const hexEnd = hexStart + hexMatch[0].length;
+    if (start >= hexStart && end <= hexEnd) return true;
+  }
+
+  return false;
+}
+
+/** БИК, ИНН и прочие идентификаторы: 9+ цифр подряд без разделителей. */
 function isLongDigitRun(body: string): boolean {
-  return /\d{10,}/.test(body);
+  return /\d{9,}/.test(body);
 }
 
 /** Годы 2001–2029 без дробной части — не отбиваем разряды. */
@@ -149,6 +164,7 @@ export const thousandSeparatorRule: Rule = {
   type: "Редполитика",
   guide: [
     "Отбиваем разряды неразрывным пробелом начиная с тысяч.",
+    "Чтобы не ловить ложные срабатывания на ИНН и БИК установлен порог проверки в 9 цифр. Поэтому правило поймает только десятки миллионов.",
   ],
   check(text, _context) {
     const issues: ReturnType<Rule["check"]> = [];
@@ -165,6 +181,7 @@ export const thousandSeparatorRule: Rule = {
         isPartOfDate(text, start, end) ||
         isPartOfDelimitedDigits(text, start, end) ||
         isPartOfBankAccountMask(text, start, end) ||
+        isPartOfHexColor(text, start, end) ||
         isLongDigitRun(body) ||
         isYearToken(body) ||
         isLeadingZeroAmount(body)

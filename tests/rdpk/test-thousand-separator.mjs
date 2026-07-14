@@ -9,6 +9,7 @@ const DATE_REGEX = /(?<![\d.])\d{1,2}\.\d{1,2}\.\d{2,4}(?![\d.])/g;
 const DELIMITED_DIGITS_REGEX = /\d+(?:[–−—/-]\d+)+/g;
 const BANK_ACCOUNT_MASK_REGEX =
   /\d{5}[ \u00A0\u202F]\d{3}[ \u00A0\u202F]\d[ \u00A0\u202F]\d{4}[ \u00A0\u202F]\d{7}/g;
+const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{3,8}/g;
 
 function isPartOfDate(text, start, end) {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
@@ -46,8 +47,20 @@ function isPartOfBankAccountMask(text, start, end) {
   return false;
 }
 
+function isPartOfHexColor(text, start, end) {
+  for (const hexMatch of text.matchAll(HEX_COLOR_REGEX)) {
+    if (hexMatch.index === undefined) continue;
+
+    const hexStart = hexMatch.index;
+    const hexEnd = hexStart + hexMatch[0].length;
+    if (start >= hexStart && end <= hexEnd) return true;
+  }
+
+  return false;
+}
+
 function isLongDigitRun(body) {
-  return /\d{10,}/.test(body);
+  return /\d{9,}/.test(body);
 }
 
 function isYearToken(body) {
@@ -139,6 +152,7 @@ function check(text) {
       isPartOfDate(text, start, end) ||
       isPartOfDelimitedDigits(text, start, end) ||
       isPartOfBankAccountMask(text, start, end) ||
+      isPartOfHexColor(text, start, end) ||
       isLongDigitRun(body) ||
       isYearToken(body) ||
       isLeadingZeroAmount(body)
@@ -192,6 +206,8 @@ const cases = [
   { text: "0083730", expect: false },
   { text: "05000", expect: false },
   { text: "40802 810 3 0000 0083730", expect: false },
+  { text: "044525225", expect: false },
+  { text: "100000000", expect: false },
   { text: "1234567890", expect: false },
   { text: "ИНН 1234567890", expect: false },
   { text: "0642-58-51325", expect: false },
@@ -200,6 +216,9 @@ const cases = [
   { text: "10000000000", expect: false },
   { text: "Цена: 5000 ₽", expect: true },
   { text: "10,000,000", expect: true },
+  { text: "#ED8836", expect: false },
+  { text: "цвет #ED8836 в макете", expect: false },
+  { text: "#fff", expect: false },
 ];
 
 let failed = 0;
