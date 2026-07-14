@@ -1,7 +1,9 @@
 import * as esbuild from "esbuild";
-import { existsSync, mkdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 
 const watch = process.argv.includes("--watch");
+const rootDir = import.meta.dirname;
 
 mkdirSync("dist", { recursive: true });
 
@@ -14,15 +16,35 @@ if (existsSync("dist/index.html")) {
   );
 }
 
+const spellTxtDir = join(rootDir, "src/spell");
+
+function getSpellTxtFiles() {
+  return readdirSync(spellTxtDir)
+    .filter((name) => name.endsWith(".txt"))
+    .map((name) => join(spellTxtDir, name));
+}
+
+const spellTxtFiles = getSpellTxtFiles();
+
+/** ponytail: явный watch для словарей — в watch-режиме .txt иногда не триггерит rebuild */
+const spellTxtPlugin = {
+  name: "spell-txt",
+  setup(build) {
+    build.onLoad({ filter: /\/spell\/[^/]+\.txt$/ }, (args) => ({
+      contents: readFileSync(args.path, "utf8"),
+      loader: "text",
+      watchFiles: spellTxtFiles,
+    }));
+  },
+};
+
 const buildOptions = {
   entryPoints: ["src/code.ts"],
   bundle: true,
   outfile: "dist/code.js",
   target: "es2017",
   logLevel: "info",
-  loader: {
-    ".txt": "text",
-  },
+  plugins: [spellTxtPlugin],
   define: {
     __html__: uiHtml,
   },

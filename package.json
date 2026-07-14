@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "npm run build:ui && npm run build:main && node scripts/write-dist-manifest.mjs",
-    "build:main": "node esbuild.config.mjs",
+    "build": "npm run build:ui && npm run build:main && node scripts/write-dist-manifest.mjs && node scripts/verify-dicts.mjs",
+    "build:main": "node esbuild.config.mjs && node scripts/verify-dicts.mjs",
     "build:ui": "vite build",
     "watch": "concurrently \"vite build --watch\" \"node esbuild.config.mjs --watch\"",
     "test": "node scripts/run-tests.mjs"

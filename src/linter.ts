@@ -7,6 +7,7 @@ import { emailRule } from "./rdpk/email";
 import { smsRule } from "./rdpk/sms";
 import { cashbackRule } from "./rdpk/cashback";
 import { lowercaseVyRule } from "./rdpk/lowercase-vy";
+import { yoLetterRule } from "./rdpk/yo-letter";
 import { multiplicationSignRule } from "./rdpk/multiplication-sign";
 import { negativeMinusRule } from "./rdpk/negative-minus";
 import { signedAmountRule } from "./rdpk/signed-amount";
@@ -29,6 +30,7 @@ const RULES: Rule[] = [
   smsRule,
   cashbackRule,
   lowercaseVyRule,
+  yoLetterRule,
   duplicateSpacesRule,
   punctuationSpaceRule,
   repeatWordsRule,

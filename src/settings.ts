@@ -32,9 +32,22 @@ export function normalizeSettings(
     return getDefaultSettings();
   }
 
+  if (stored.enabledRuleIds.length === 0) {
+    return { enabledRuleIds: [] };
+  }
+
+  const enabled = new Set(
+    stored.enabledRuleIds.filter((id) => catalogIds.includes(id)),
+  );
+
+  // ponytail: новые правила из каталога включаем по умолчанию; «выключить все» сохраняем
+  for (const id of catalogIds) {
+    if (!enabled.has(id)) {
+      enabled.add(id);
+    }
+  }
+
   return {
-    enabledRuleIds: stored.enabledRuleIds.filter((id) =>
-      catalogIds.includes(id),
-    ),
+    enabledRuleIds: catalogIds.filter((id) => enabled.has(id)),
   };
 }
