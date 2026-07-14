@@ -4,19 +4,14 @@ export const COLOR_TOKEN_RULE = "ColorTokenCheck";
 export const COLOR_TOKEN_TITLE = "Цвет вне дизайн-системы";
 export const COLOR_TOKEN_DESCRIPTION =
   "На слое используется цвет, который не связан с цветовым токеном дизайн-системы.";
-const COLOR_TOKEN_MESSAGE_PREFIX = "На слое используется локальный цвет";
-const COLOR_TOKEN_MESSAGE_SUFFIX =
-  "который не связан с цветовым токеном дизайн-системы.";
 export const COLOR_TOKEN_SUGGESTION =
-  "Используйте соответствующий цветовой токен из дизайн-системы вместо локального цвета.";
+  "Используйте соответствующий цветовой токен из дизайн-системы.";
 
 type PaintField = "fills" | "strokes";
 
 type NodeWithPaints = SceneNode & {
   fills?: ReadonlyArray<Paint> | typeof figma.mixed;
   strokes?: ReadonlyArray<Paint>;
-  fillStyleId?: string | typeof figma.mixed;
-  strokeStyleId?: string | typeof figma.mixed;
   boundVariables?: {
     fills?: VariableAlias[];
     strokes?: VariableAlias[];
@@ -26,15 +21,10 @@ type NodeWithPaints = SceneNode & {
 
 type TextNodeWithSegments = TextNode & {
   getStyledTextSegments?: (
-    fields: ["fills", "fillStyleId"],
+    fields: ["fills"],
   ) => Array<{
     fills: ReadonlyArray<Paint> | typeof figma.mixed;
-    fillStyleId: string | typeof figma.mixed;
   }>;
-};
-
-type SolidPaintWithStyle = SolidPaint & {
-  styleId?: string | typeof figma.mixed;
 };
 
 type ColorTokenHit = FigmaRuleHit & {
@@ -83,17 +73,6 @@ function formatSolidPaintColor(paint: SolidPaint): string {
   return percent === 100 ? hex : `${hex} (${percent}%)`;
 }
 
-function hasStyleId(styleId: unknown): boolean {
-  return typeof styleId === "string" && styleId.length > 0;
-}
-
-function getNodeStyleId(
-  node: NodeWithPaints,
-  field: PaintField,
-): string | typeof figma.mixed | undefined {
-  return field === "fills" ? node.fillStyleId : node.strokeStyleId;
-}
-
 function getNodePath(node: SceneNode): string {
   const names: string[] = [];
   let current: BaseNode | null = node;
@@ -119,17 +98,6 @@ function isPaintBoundToVariable(
   );
 }
 
-function isPaintLinkedToStyle(
-  paint: SolidPaint,
-  node: NodeWithPaints,
-  field: PaintField,
-): boolean {
-  return Boolean(
-    hasStyleId(getNodeStyleId(node, field)) ||
-      hasStyleId((paint as SolidPaintWithStyle).styleId),
-  );
-}
-
 export function hasManualSolidPaint(
   paints: ReadonlyArray<Paint>,
   node: NodeWithPaints,
@@ -143,15 +111,10 @@ function findManualSolidPaint(
   node: NodeWithPaints,
   field: PaintField,
 ): SolidPaint | null {
-  if (hasStyleId(getNodeStyleId(node, field))) {
-    return null;
-  }
-
   for (const [index, paint] of paints.entries()) {
     if (
       isVisibleSolidPaint(paint) &&
-      !isPaintBoundToVariable(paint, node, field, index) &&
-      !isPaintLinkedToStyle(paint, node, field)
+      !isPaintBoundToVariable(paint, node, field, index)
     ) {
       return paint;
     }
@@ -165,8 +128,8 @@ function findManualTextRangePaint(node: TextNodeWithSegments): SolidPaint | null
     return null;
   }
 
-  for (const segment of node.getStyledTextSegments(["fills", "fillStyleId"])) {
-    if (hasStyleId(segment.fillStyleId) || !isPaintList(segment.fills)) {
+  for (const segment of node.getStyledTextSegments(["fills"])) {
+    if (!isPaintList(segment.fills)) {
       continue;
     }
 
@@ -200,7 +163,6 @@ function createColorTokenHit(
 ): ColorTokenHit {
   const nodePath = getNodePath(node);
   const color = formatSolidPaintColor(paint);
-  const message = `${COLOR_TOKEN_MESSAGE_PREFIX} ${color}, ${COLOR_TOKEN_MESSAGE_SUFFIX}`;
 
   console.log("[ColorTokenCheck] violation", {
     nodeId: node.id,
@@ -213,8 +175,8 @@ function createColorTokenHit(
   return {
     node,
     ruleId: COLOR_TOKEN_RULE,
-    message: `${message}\n${nodePath}`,
-    match: `${nodePath}\n${field === "fills" ? "Fill" : "Stroke"}: ${color}`,
+    message: "",
+    match: `${field === "fills" ? "Fill" : "Stroke"}: ${color}`,
     replacement: COLOR_TOKEN_SUGGESTION,
     start: 0,
     end: 0,

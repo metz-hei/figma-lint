@@ -3,11 +3,8 @@
 const COLOR_TOKEN_RULE = "ColorTokenCheck";
 const COLOR_TOKEN_DESCRIPTION =
   "На слое используется цвет, который не связан с цветовым токеном дизайн-системы.";
-const COLOR_TOKEN_MESSAGE_PREFIX = "На слое используется локальный цвет";
-const COLOR_TOKEN_MESSAGE_SUFFIX =
-  "который не связан с цветовым токеном дизайн-системы.";
 const COLOR_TOKEN_SUGGESTION =
-  "Используйте соответствующий цветовой токен из дизайн-системы вместо локального цвета.";
+  "Используйте соответствующий цветовой токен из дизайн-системы.";
 
 const COLOR_NODE_TYPES = new Set([
   "TEXT",
@@ -56,14 +53,6 @@ function formatSolidPaintColor(paint) {
   return percent === 100 ? hex : `${hex} (${percent}%)`;
 }
 
-function hasStyleId(styleId) {
-  return typeof styleId === "string" && styleId.length > 0;
-}
-
-function getNodeStyleId(node, field) {
-  return field === "fills" ? node.fillStyleId : node.strokeStyleId;
-}
-
 function isPaintBoundToVariable(paint, node, field, index) {
   return Boolean(
     paint.boundVariables?.color ?? node.boundVariables?.[field]?.[index],
@@ -71,10 +60,6 @@ function isPaintBoundToVariable(paint, node, field, index) {
 }
 
 function findManualSolidPaint(paints, node, field) {
-  if (hasStyleId(getNodeStyleId(node, field))) {
-    return null;
-  }
-
   for (const [index, paint] of paints.entries()) {
     if (
       isVisibleSolidPaint(paint) &&
@@ -139,9 +124,9 @@ function checkColorToken(node) {
 
     return {
       ruleId: COLOR_TOKEN_RULE,
-      message: `${COLOR_TOKEN_MESSAGE_PREFIX} ${color}, ${COLOR_TOKEN_MESSAGE_SUFFIX}`,
+      message: "",
       replacement: COLOR_TOKEN_SUGGESTION,
-      match: field,
+      match: `${field === "fill" ? "Fill" : "Stroke"}: ${color}`,
     };
   });
 }
@@ -156,9 +141,9 @@ const cases = [
       fills: [solidPaint(false, { r: 229 / 255, g: 241 / 255, b: 252 / 255 })],
       strokes: [],
     },
-    expectedMatches: ["fill"],
-    expectedMessage:
-      "На слое используется локальный цвет #E5F1FC, который не связан с цветовым токеном дизайн-системы.",
+    expectedMatches: ["Fill: #E5F1FC"],
+    expectedDisplay:
+      "Fill: #E5F1FC → Используйте соответствующий цветовой токен из дизайн-системы.",
   },
   {
     label: "manual rectangle fill with opacity",
@@ -171,9 +156,9 @@ const cases = [
       ],
       strokes: [],
     },
-    expectedMatches: ["fill"],
-    expectedMessage:
-      "На слое используется локальный цвет #E5F1FC (80%), который не связан с цветовым токеном дизайн-системы.",
+    expectedMatches: ["Fill: #E5F1FC (80%)"],
+    expectedDisplay:
+      "Fill: #E5F1FC (80%) → Используйте соответствующий цветовой токен из дизайн-системы.",
   },
   {
     label: "variable-bound fill and stroke",
@@ -199,7 +184,7 @@ const cases = [
     expectedMatches: [],
   },
   {
-    label: "paint style without variable is valid",
+    label: "paint style without variable is an error",
     node: {
       id: "4",
       name: "Local style",
@@ -208,7 +193,18 @@ const cases = [
       fills: [solidPaint()],
       strokes: [],
     },
-    expectedMatches: [],
+    expectedMatches: ["Fill: #FF0000"],
+  },
+  {
+    label: "paint style id without variable is an error",
+    node: {
+      id: "4a",
+      name: "Paint style id",
+      type: "RECTANGLE",
+      fills: [{ ...solidPaint(), styleId: "S:library-paint" }],
+      strokes: [],
+    },
+    expectedMatches: ["Fill: #FF0000"],
   },
   {
     label: "manual text color in styled segment",
@@ -222,7 +218,7 @@ const cases = [
         return [{ fills: [solidPaint()] }];
       },
     },
-    expectedMatches: ["fill"],
+    expectedMatches: ["Fill: #FF0000"],
   },
   {
     label: "unsupported node is skipped",
@@ -266,16 +262,18 @@ for (const testCase of cases) {
   for (const issue of issues) {
     if (
       issue.ruleId !== COLOR_TOKEN_RULE ||
+      issue.message !== "" ||
       issue.replacement !== COLOR_TOKEN_SUGGESTION
     ) {
       console.error(`FAIL ${testCase.label}: wrong issue shape`, issue);
       failed++;
     }
 
-    if (testCase.expectedMessage && issue.message !== testCase.expectedMessage) {
+    const display = `${issue.match} → ${issue.replacement}`;
+    if (testCase.expectedDisplay && display !== testCase.expectedDisplay) {
       console.error(
-        `FAIL ${testCase.label}: expected message "${testCase.expectedMessage}", got`,
-        issue.message,
+        `FAIL ${testCase.label}: expected display "${testCase.expectedDisplay}", got`,
+        display,
       );
       failed++;
     }

@@ -6,6 +6,8 @@ import type {
 } from "../types";
 import { isEffectivelyVisible } from "../visibility";
 import { ColorTokenCheck } from "./rules/color-token-check";
+import { deprecatedComponentCheck } from "./rules/deprecated-component-check";
+import { radiusTokenCheck } from "./rules/radius-token-check";
 import { spacingFromSpaceRule } from "./rules/spacing-from-space";
 import { UnusedGapCheck } from "./rules/unused-gap-check";
 
@@ -17,6 +19,8 @@ const FIGMA_RULES: FigmaRule[] = [
   spacingFromSpaceRule,
   UnusedGapCheck,
   ColorTokenCheck,
+  radiusTokenCheck,
+  deprecatedComponentCheck,
 ];
 
 export function getFigmaRulesCatalog(): RuleCatalogEntry[] {

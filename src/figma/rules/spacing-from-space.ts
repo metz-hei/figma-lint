@@ -1,15 +1,11 @@
 import type { FigmaRule, FigmaRuleContext, FigmaRuleHit } from "../../types";
+import { isEffectivelyVisible } from "../../visibility";
 
 /**
- * Ловит gap и padding без токена из группы Space: «gap: 16» вместо «Space-4», «padding top: 8» без variable и т.п.
+ * Ловит gap и padding без привязки к токену из группы Space.
  */
-export const SPACE_VARIABLE_PREFIX = /^Space-\d+/;
-
 type SpacingField =
   | "itemSpacing"
-  | "counterAxisSpacing"
-  | "gridRowGap"
-  | "gridColumnGap"
   | "paddingTop"
   | "paddingRight"
   | "paddingBottom"
@@ -17,9 +13,6 @@ type SpacingField =
 
 const FIELD_LABELS: Record<SpacingField, string> = {
   itemSpacing: "gap",
-  counterAxisSpacing: "gap между рядами",
-  gridRowGap: "gap между рядами",
-  gridColumnGap: "gap между колонками",
   paddingTop: "padding top",
   paddingRight: "padding right",
   paddingBottom: "padding bottom",
@@ -28,12 +21,9 @@ const FIELD_LABELS: Record<SpacingField, string> = {
 
 type AutoLayoutNode = SceneNode &
   AutoLayoutMixin &
-  GridLayoutMixin & {
+  Partial<AutoLayoutChildrenMixin> & {
     boundVariables?: {
       itemSpacing?: VariableAlias;
-      counterAxisSpacing?: VariableAlias;
-      gridRowGap?: VariableAlias;
-      gridColumnGap?: VariableAlias;
       paddingTop?: VariableAlias;
       paddingRight?: VariableAlias;
       paddingBottom?: VariableAlias;
@@ -45,16 +35,11 @@ export function isSpacingSpecified(value: number): boolean {
   return value !== 0;
 }
 
-export function isSpaceVariableName(name: string): boolean {
-  return SPACE_VARIABLE_PREFIX.test(name);
-}
-
 export function checkSpacingBinding(
   ruleId: string,
   field: SpacingField,
   value: number,
   boundVariableId: string | undefined,
-  variablesById: ReadonlyMap<string, { name: string }>,
 ): FigmaRuleHit | null {
   if (!isSpacingSpecified(value)) {
     return null;
@@ -66,29 +51,6 @@ export function checkSpacingBinding(
     return {
       ruleId,
       message: "Привяжите токен из группы Space",
-      match: `${fieldLabel}: ${value}`,
-      replacement: "",
-      start: 0,
-      end: 0,
-    };
-  }
-
-  const variable = variablesById.get(boundVariableId);
-  if (!variable) {
-    return {
-      ruleId,
-      message: "Variable не найдена",
-      match: `${fieldLabel}: ${value}`,
-      replacement: "",
-      start: 0,
-      end: 0,
-    };
-  }
-
-  if (!isSpaceVariableName(variable.name)) {
-    return {
-      ruleId,
-      message: `Привязана «${variable.name}»`,
       match: `${fieldLabel}: ${value}`,
       replacement: "",
       start: 0,
@@ -111,25 +73,13 @@ function getBoundVariableId(
 }
 
 export function getSpacingFieldsForNode(node: AutoLayoutNode): SpacingField[] {
-  const fields: SpacingField[] = [
+  return [
+    "itemSpacing",
     "paddingTop",
     "paddingRight",
     "paddingBottom",
     "paddingLeft",
   ];
-
-  if (node.layoutMode === "GRID") {
-    fields.unshift("gridRowGap", "gridColumnGap");
-    return fields;
-  }
-
-  fields.unshift("itemSpacing");
-
-  if (node.layoutWrap === "WRAP") {
-    fields.push("counterAxisSpacing");
-  }
-
-  return fields;
 }
 
 export function collectSpacingBoundVariableIds(node: SceneNode): string[] {
@@ -159,14 +109,22 @@ export const spacingFromSpaceRule = {
     "Для указания отступов gap или padding используем токены из группы Space",
   ],
   check(node: SceneNode, ctx: FigmaRuleContext) {
-    if (!isAutoLayoutNode(node)) {
+    void ctx;
+
+    if (!isEffectivelyVisible(node) || !isAutoLayoutNode(node)) {
       return [];
     }
 
     const issues: FigmaRuleHit[] = [];
     const ruleId = spacingFromSpaceRule.id;
+    const checkedFields = new Set<SpacingField>();
 
     for (const field of getSpacingFieldsForNode(node)) {
+      if (checkedFields.has(field)) {
+        continue;
+      }
+      checkedFields.add(field);
+
       const value = node[field] ?? 0;
       const boundVariableId = getBoundVariableId(node, field);
       const hit = checkSpacingBinding(
@@ -174,7 +132,6 @@ export const spacingFromSpaceRule = {
         field,
         value,
         boundVariableId,
-        ctx.variablesById,
       );
 
       if (hit) {

@@ -1,24 +1,76 @@
 import type { FigmaRule, FigmaRuleHit } from "../../types";
 
-const UNUSED_GAP_MESSAGE =
-  "У контейнера задан gap, но внутри только один элемент. Gap не используется.";
-
-type AutoLayoutNodeWithChildren = SceneNode &
+type EditableAutoLayoutContainer = SceneNode &
   AutoLayoutMixin &
   ChildrenMixin;
 
-function isAutoLayoutNodeWithChildren(
-  node: SceneNode,
-): node is AutoLayoutNodeWithChildren {
+function isEditableContainer(node: SceneNode): node is EditableAutoLayoutContainer {
   return (
+    node.type === "FRAME" ||
+    node.type === "COMPONENT" ||
+    node.type === "COMPONENT_SET"
+  );
+}
+
+function isAutoLayoutContainer(
+  node: SceneNode,
+): node is EditableAutoLayoutContainer {
+  return (
+    isEditableContainer(node) &&
     "layoutMode" in node &&
     node.layoutMode !== "NONE" &&
     "children" in node
   );
 }
 
-export function hasUnusedGap(node: AutoLayoutNodeWithChildren): boolean {
-  return node.itemSpacing > 0 && node.children.length < 2;
+function hasHiddenAncestor(node: SceneNode): boolean {
+  let current = node.parent;
+
+  while (current && current.type !== "PAGE" && current.type !== "DOCUMENT") {
+    if ("visible" in current && current.visible === false) {
+      return true;
+    }
+
+    current = current.parent;
+  }
+
+  return false;
+}
+
+function isInsideInstance(node: SceneNode): boolean {
+  let current = node.parent;
+
+  while (current && current.type !== "PAGE" && current.type !== "DOCUMENT") {
+    if (current.type === "INSTANCE") {
+      return true;
+    }
+
+    current = current.parent;
+  }
+
+  return false;
+}
+
+function participatesInAutoLayout(node: SceneNode): boolean {
+  if (node.visible === false) {
+    return false;
+  }
+
+  if ("layoutPositioning" in node && node.layoutPositioning === "ABSOLUTE") {
+    return false;
+  }
+
+  return true;
+}
+
+export function countVisibleAutoLayoutChildren(
+  node: EditableAutoLayoutContainer,
+): number {
+  return node.children.filter(participatesInAutoLayout).length;
+}
+
+export function hasUnusedGap(node: EditableAutoLayoutContainer): boolean {
+  return node.itemSpacing > 0 && countVisibleAutoLayoutChildren(node) < 2;
 }
 
 export const UnusedGapCheck = {
@@ -31,13 +83,19 @@ export const UnusedGapCheck = {
     "Gap нужен только когда внутри Auto Layout два или больше элементов.",
   ],
   check(node: SceneNode) {
-    if (!isAutoLayoutNodeWithChildren(node) || !hasUnusedGap(node)) {
+    if (
+      !isAutoLayoutContainer(node) ||
+      node.visible === false ||
+      hasHiddenAncestor(node) ||
+      isInsideInstance(node) ||
+      !hasUnusedGap(node)
+    ) {
       return [];
     }
 
     const hit: FigmaRuleHit = {
       ruleId: UnusedGapCheck.id,
-      message: UNUSED_GAP_MESSAGE,
+      message: `Gap: ${node.itemSpacing}px → Уберите gap или добавьте второй элемент в Auto Layout.`,
       match: `gap: ${node.itemSpacing}`,
       replacement: "",
       start: 0,
