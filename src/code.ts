@@ -153,17 +153,14 @@ figma.ui.onmessage = (msg: {
     return;
   }
 
-  if (msg.type === "update-settings" && msg.enabledRuleIds) {
-    void saveSettings({ enabledRuleIds: msg.enabledRuleIds })
-      .then(() => {
-        const updated: SettingsUpdatedMessage = {
-          type: "settings-updated",
-          settings,
-        };
-        figma.ui.postMessage(updated);
-        return runLint();
-      })
-      .then((result) => figma.ui.postMessage(result));
+  if (msg.type === "update-settings" && Array.isArray(msg.enabledRuleIds)) {
+    void saveSettings({ enabledRuleIds: msg.enabledRuleIds }).then(() => {
+      const updated: SettingsUpdatedMessage = {
+        type: "settings-updated",
+        settings,
+      };
+      figma.ui.postMessage(updated);
+    });
     return;
   }
 
@@ -199,8 +196,6 @@ async function selectNodeById(nodeId: string): Promise<void> {
 async function bootstrap(): Promise<void> {
   await loadSettings();
   postInit();
-  const result = await runLint();
-  figma.ui.postMessage(result);
 }
 
 void bootstrap();

@@ -36,18 +36,9 @@ export function normalizeSettings(
     return { enabledRuleIds: [] };
   }
 
-  const enabled = new Set(
-    stored.enabledRuleIds.filter((id) => catalogIds.includes(id)),
+  const validStored = stored.enabledRuleIds.filter((id) =>
+    catalogIds.includes(id),
   );
 
-  // ponytail: новые правила из каталога включаем по умолчанию; «выключить все» сохраняем
-  for (const id of catalogIds) {
-    if (!enabled.has(id)) {
-      enabled.add(id);
-    }
-  }
-
-  return {
-    enabledRuleIds: catalogIds.filter((id) => enabled.has(id)),
-  };
+  return { enabledRuleIds: validStored };
 }

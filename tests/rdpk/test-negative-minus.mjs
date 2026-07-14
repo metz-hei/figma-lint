@@ -1,5 +1,5 @@
 /** Smoke-test для паттерна negative-minus (дублирует src/rdpk/negative-minus.ts). */
-const WRONG_MINUS_REGEX = /(?<!\d)(?:-|−|—)(?=\d)/g;
+const WRONG_MINUS_REGEX = /(?<![\d\p{L}])(?:-|−|—)(?=\d)/gu;
 
 function check(text) {
   return [...text.matchAll(WRONG_MINUS_REGEX)];
@@ -28,6 +28,7 @@ const cases = [
   { text: "50-100", expect: false },
   { text: "2024-06-02", expect: false },
   { text: "50", expect: false },
+  { text: "ММВ-7-11/477", expect: false },
 ];
 
 let failed = 0;

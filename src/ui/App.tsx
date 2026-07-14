@@ -47,9 +47,9 @@ function formatSummary(issues: LintIssue[], scanned: number) {
 export default function App() {
   const [view, setView] = useState<"issues" | "rule" | "settings">("issues");
   const [issues, setIssues] = useState<LintIssue[]>([]);
-  const [scanned, setScanned] = useState(0);
+  const [scanned, setScanned] = useState<number | null>(null);
   const [activeIssue, setActiveIssue] = useState<LintIssue | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [rulesCatalog, setRulesCatalog] = useState<
     InitMessage["rulesCatalog"]
   >([]);
@@ -65,7 +65,7 @@ export default function App() {
     setLoading(false);
     setFixingKey(null);
     setFixError(null);
-    setView((current) => (current === "settings" ? current : "issues"));
+    setView("issues");
     setActiveIssue(null);
   }, []);
 
@@ -102,6 +102,7 @@ export default function App() {
   }, [applyResult]);
 
   const handleRescan = () => {
+    setView("issues");
     setLoading(true);
     postToPlugin({ type: "lint" });
   };
@@ -123,7 +124,6 @@ export default function App() {
 
   const handleSettingsChange = (enabledRuleIds: string[]) => {
     setSettings({ enabledRuleIds });
-    setLoading(true);
     postToPlugin({ type: "update-settings", enabledRuleIds });
   };
 
@@ -142,7 +142,10 @@ export default function App() {
           <p className="text-muted-foreground text-[11px]">
             {loading
               ? "Сканирование…"
-              : fixError ?? formatSummary(issues, scanned)}
+              : fixError ??
+                (scanned === null
+                  ? "Нажмите «Проверить снова»"
+                  : formatSummary(issues, scanned))}
           </p>
         </div>
         {view === "issues" ? (
@@ -171,6 +174,10 @@ export default function App() {
           </p>
         ) : view === "rule" && activeIssue ? (
           <RuleView issue={activeIssue} />
+        ) : scanned === null ? (
+          <p className="text-muted-foreground px-3 py-6 text-center text-[11px]">
+            Проверка ещё не запускалась
+          </p>
         ) : issues.length === 0 ? (
           <p className="text-muted-foreground px-3 py-6 text-center text-[11px]">
             Всё чисто

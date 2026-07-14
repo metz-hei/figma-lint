@@ -35,6 +35,9 @@ const BANK_ACCOUNT_MASK_REGEX =
 /** Hex-цвета: #ED8836, #fff. */
 const HEX_COLOR_REGEX = /#[0-9A-Fa-f]{3,8}/g;
 
+/** Замаскированные номера: ••6176. */
+const MASKED_DIGITS_REGEX = /•+\d+/g;
+
 function isPartOfDate(text: string, start: number, end: number): boolean {
   for (const dateMatch of text.matchAll(DATE_REGEX)) {
     if (dateMatch.index === undefined) continue;
@@ -78,6 +81,18 @@ function isPartOfHexColor(text: string, start: number, end: number): boolean {
     const hexStart = hexMatch.index;
     const hexEnd = hexStart + hexMatch[0].length;
     if (start >= hexStart && end <= hexEnd) return true;
+  }
+
+  return false;
+}
+
+function isPartOfMaskedDigits(text: string, start: number, end: number): boolean {
+  for (const maskMatch of text.matchAll(MASKED_DIGITS_REGEX)) {
+    if (maskMatch.index === undefined) continue;
+
+    const maskStart = maskMatch.index;
+    const maskEnd = maskStart + maskMatch[0].length;
+    if (start >= maskStart && end <= maskEnd) return true;
   }
 
   return false;
@@ -182,6 +197,7 @@ export const thousandSeparatorRule: Rule = {
         isPartOfDelimitedDigits(text, start, end) ||
         isPartOfBankAccountMask(text, start, end) ||
         isPartOfHexColor(text, start, end) ||
+        isPartOfMaskedDigits(text, start, end) ||
         isLongDigitRun(body) ||
         isYearToken(body) ||
         isLeadingZeroAmount(body)

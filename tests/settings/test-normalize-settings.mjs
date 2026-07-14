@@ -8,15 +8,9 @@ function normalizeEnabledRuleIds(storedIds, catalogIds) {
     return [];
   }
 
-  const enabled = new Set(storedIds.filter((id) => catalogIds.includes(id)));
+  const validStored = storedIds.filter((id) => catalogIds.includes(id));
 
-  for (const id of catalogIds) {
-    if (!enabled.has(id)) {
-      enabled.add(id);
-    }
-  }
-
-  return catalogIds.filter((id) => enabled.has(id));
+  return validStored;
 }
 
 const sampleCatalog = [
@@ -28,9 +22,14 @@ const sampleCatalog = [
 
 const cases = [
   {
-    name: "новое правило добавляется к сохранённым",
+    name: "выбранное подмножество сохраняется",
     stored: ["cashback", "spell-check"],
-    expect: ["cashback", "lowercase-vy", "yo-letter", "spell-check"],
+    expect: ["cashback", "spell-check"],
+  },
+  {
+    name: "одно правило сохраняется",
+    stored: ["yo-letter"],
+    expect: ["yo-letter"],
   },
   {
     name: "выключить все сохраняется",
@@ -40,7 +39,7 @@ const cases = [
   {
     name: "удалённые из каталога отбрасываются",
     stored: ["cashback", "removed-rule"],
-    expect: ["cashback", "lowercase-vy", "yo-letter", "spell-check"],
+    expect: ["cashback"],
   },
 ];
 

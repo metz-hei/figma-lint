@@ -1,7 +1,7 @@
 import type { Rule } from "../types";
 
 /** Правильный минус — en dash (–). Ловит дефис, знак минуса и em dash вплотную к числу. «— 50» с пробелом — не ошибка. */
-const WRONG_MINUS_REGEX = /(?<!\d)(?:-|−|—)(?=\d)/g;
+const WRONG_MINUS_REGEX = /(?<![\d\p{L}])(?:-|−|—)(?=\d)/gu;
 
 const CORRECT_MINUS = "–";
 
