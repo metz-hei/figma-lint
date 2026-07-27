@@ -24,7 +24,12 @@ figma.showUI(__html__, { width: 420, height: 560, themeColors: true });
 
 let settings: PluginSettings = getDefaultSettings();
 
-function collectTextNodes(): TextNode[] {
+function getScanRoots(): readonly SceneNode[] {
+  const selection = figma.currentPage.selection;
+  return selection.length > 0 ? selection : figma.currentPage.children;
+}
+
+function collectTextNodes(roots: readonly SceneNode[]): TextNode[] {
   const nodes: TextNode[] = [];
 
   const walk = (node: SceneNode) => {
@@ -41,8 +46,8 @@ function collectTextNodes(): TextNode[] {
     }
   };
 
-  for (const child of figma.currentPage.children) {
-    walk(child);
+  for (const root of roots) {
+    walk(root);
   }
   return nodes;
 }
@@ -62,7 +67,8 @@ async function saveSettings(next: PluginSettings): Promise<void> {
 }
 
 async function runLint(): Promise<LintResultMessage> {
-  const textNodes = collectTextNodes();
+  const roots = getScanRoots();
+  const textNodes = collectTextNodes(roots);
   const enabledRuleIds = getEnabledRuleIds();
   const syncIssues = lintTextNodes(textNodes, enabledRuleIds);
 
@@ -82,7 +88,7 @@ async function runLint(): Promise<LintResultMessage> {
     );
   }
 
-  const figmaIssues = await lintAutoLayoutNodes(enabledRuleIds);
+  const figmaIssues = await lintAutoLayoutNodes(enabledRuleIds, roots);
 
   return {
     type: "lint-result",

@@ -1,5 +1,11 @@
 import type { FigmaRule, FigmaRuleHit } from "../../types";
 
+export const UNUSED_GAP_TITLE = "Gap используется только между элементами";
+export const UNUSED_GAP_DESCRIPTION =
+  "Gap нужен только когда внутри Auto Layout два или больше элементов.";
+export const UNUSED_GAP_SUGGESTION =
+  "Уберите gap";
+
 type EditableAutoLayoutContainer = SceneNode &
   AutoLayoutMixin &
   ChildrenMixin;
@@ -52,10 +58,7 @@ function isInsideInstance(node: SceneNode): boolean {
 }
 
 function participatesInAutoLayout(node: SceneNode): boolean {
-  if (node.visible === false) {
-    return false;
-  }
-
+  // ponytail: скрытые дети тоже считаем — gap часто оставлен под них
   if ("layoutPositioning" in node && node.layoutPositioning === "ABSOLUTE") {
     return false;
   }
@@ -63,25 +66,23 @@ function participatesInAutoLayout(node: SceneNode): boolean {
   return true;
 }
 
-export function countVisibleAutoLayoutChildren(
+export function countAutoLayoutChildren(
   node: EditableAutoLayoutContainer,
 ): number {
   return node.children.filter(participatesInAutoLayout).length;
 }
 
 export function hasUnusedGap(node: EditableAutoLayoutContainer): boolean {
-  return node.itemSpacing > 0 && countVisibleAutoLayoutChildren(node) < 2;
+  return node.itemSpacing > 0 && countAutoLayoutChildren(node) < 2;
 }
 
 export const UnusedGapCheck = {
   id: "unused-gap-check",
-  name: "Gap используется только между элементами",
+  name: UNUSED_GAP_TITLE,
   severity: "warning" as const,
   type: "Figma" as const,
   category: "figma" as const,
-  guide: [
-    "Gap нужен только когда внутри Auto Layout два или больше элементов.",
-  ],
+  guide: [UNUSED_GAP_DESCRIPTION],
   check(node: SceneNode) {
     if (
       !isAutoLayoutContainer(node) ||
@@ -95,9 +96,9 @@ export const UnusedGapCheck = {
 
     const hit: FigmaRuleHit = {
       ruleId: UnusedGapCheck.id,
-      message: `Gap: ${node.itemSpacing}px → Уберите gap или добавьте второй элемент в Auto Layout.`,
+      message: "",
       match: `gap: ${node.itemSpacing}`,
-      replacement: "",
+      replacement: UNUSED_GAP_SUGGESTION,
       start: 0,
       end: 0,
     };

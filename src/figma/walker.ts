@@ -1,4 +1,6 @@
-export function collectAutoLayoutNodes(): SceneNode[] {
+export function collectAutoLayoutNodes(
+  roots: readonly SceneNode[] = figma.currentPage.children,
+): SceneNode[] {
   const nodes: SceneNode[] = [];
 
   const walk = (node: SceneNode) => {
@@ -17,8 +19,8 @@ export function collectAutoLayoutNodes(): SceneNode[] {
     }
   };
 
-  for (const child of figma.currentPage.children) {
-    walk(child);
+  for (const root of roots) {
+    walk(root);
   }
 
   return nodes;

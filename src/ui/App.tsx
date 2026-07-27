@@ -144,7 +144,7 @@ export default function App() {
               ? "Сканирование…"
               : fixError ??
                 (scanned === null
-                  ? "Нажмите «Проверить снова»"
+                  ? "Нажмите «Проверить»"
                   : formatSummary(issues, scanned))}
           </p>
         </div>
@@ -198,7 +198,7 @@ export default function App() {
       {view === "issues" ? (
         <footer className="flex shrink-0 gap-2 p-2.5">
           <Button className="flex-1" onClick={handleRescan}>
-            Проверить снова
+            Проверить
           </Button>
           <Button
             className="flex-1"
@@ -218,7 +218,7 @@ export default function App() {
             ← Назад
           </Button>
           <Button className="flex-1" onClick={handleRescan} disabled={loading}>
-            Проверить снова
+            Проверить
           </Button>
         </footer>
       ) : (

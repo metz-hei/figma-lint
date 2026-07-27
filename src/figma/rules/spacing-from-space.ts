@@ -4,6 +4,13 @@ import { isEffectivelyVisible } from "../../visibility";
 /**
  * Ловит gap и padding без привязки к токену из группы Space.
  */
+export const SPACING_FROM_SPACE_TITLE =
+  "Отступ вне дизайн-системы";
+export const SPACING_FROM_SPACE_DESCRIPTION =
+  "Для указания отступов gap или padding используем токены из коллекции Space.";
+export const SPACING_FROM_SPACE_SUGGESTION =
+  "Привяжите токен из коллекции Space";
+
 type SpacingField =
   | "itemSpacing"
   | "paddingTop"
@@ -50,9 +57,9 @@ export function checkSpacingBinding(
   if (!boundVariableId) {
     return {
       ruleId,
-      message: "Привяжите токен из группы Space",
+      message: "",
       match: `${fieldLabel}: ${value}`,
-      replacement: "",
+      replacement: SPACING_FROM_SPACE_SUGGESTION,
       start: 0,
       end: 0,
     };
@@ -101,13 +108,11 @@ export function collectSpacingBoundVariableIds(node: SceneNode): string[] {
 
 export const spacingFromSpaceRule = {
   id: "spacing-from-space",
-  name: "Отступы задаются через группу токенов Space",
+  name: SPACING_FROM_SPACE_TITLE,
   severity: "error" as const,
   type: "Figma" as const,
   category: "figma" as const,
-  guide: [
-    "Для указания отступов gap или padding используем токены из группы Space",
-  ],
+  guide: [SPACING_FROM_SPACE_DESCRIPTION],
   check(node: SceneNode, ctx: FigmaRuleContext) {
     void ctx;
 

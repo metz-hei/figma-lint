@@ -1,7 +1,10 @@
 import type { FigmaRule, FigmaRuleContext, FigmaRuleHit } from "../../types";
 
-const RADIUS_TOKEN_MESSAGE = (value: number) =>
-  `На слое используется локальный радиус ${value}px, который не связан с токеном Radius дизайн-системы.`;
+export const RADIUS_TOKEN_TITLE = "Радиус вне дизайн-системы";
+export const RADIUS_TOKEN_DESCRIPTION =
+  "Все радиусы задаются токенами из коллекции Radius.";
+export const RADIUS_TOKEN_SUGGESTION =
+  "Привяжите токен из коллекции Radius";
 
 const RADIUS_VARIABLE_PREFIX = /^Radius(?:$|[-/\s])/i;
 
@@ -60,9 +63,9 @@ export function checkRadiusBinding(
 
   const hit: FigmaRuleHit = {
     ruleId,
-    message: RADIUS_TOKEN_MESSAGE(value),
-    match: `corner radius: ${value}`,
-    replacement: "",
+    message: "",
+    match: `Radius: ${value}`,
+    replacement: RADIUS_TOKEN_SUGGESTION,
     start: 0,
     end: 0,
   };
@@ -116,7 +119,9 @@ export function collectRadiusBoundVariableIds(node: SceneNode): string[] {
   return ids;
 }
 
-export function collectRadiusNodes(): SceneNode[] {
+export function collectRadiusNodes(
+  roots: readonly SceneNode[] = figma.currentPage.children,
+): SceneNode[] {
   const nodes: SceneNode[] = [];
 
   const walk = (node: SceneNode) => {
@@ -135,8 +140,8 @@ export function collectRadiusNodes(): SceneNode[] {
     }
   };
 
-  for (const child of figma.currentPage.children) {
-    walk(child);
+  for (const root of roots) {
+    walk(root);
   }
 
   return nodes;
@@ -144,13 +149,11 @@ export function collectRadiusNodes(): SceneNode[] {
 
 export const radiusTokenCheck = {
   id: "radius-token-check",
-  name: "Радиус вне дизайн-системы",
+  name: RADIUS_TOKEN_TITLE,
   severity: "error" as const,
   type: "Figma" as const,
   category: "figma" as const,
-  guide: [
-    "Все радиусы скругления должны быть связаны с токенами из коллекции Radius.",
-  ],
+  guide: [RADIUS_TOKEN_DESCRIPTION],
   check(node: SceneNode, ctx: FigmaRuleContext) {
     if (!isRadiusNode(node)) {
       return [];

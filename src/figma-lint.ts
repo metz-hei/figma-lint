@@ -20,8 +20,9 @@ export { getFigmaRulesCatalog, lintSceneNodes };
 
 export async function lintAutoLayoutNodes(
   enabledRuleIds?: ReadonlySet<string>,
+  roots?: readonly SceneNode[],
 ): Promise<LintIssue[]> {
-  const nodes = collectAutoLayoutNodes();
+  const nodes = collectAutoLayoutNodes(roots);
   const autoLayoutRuleIds = new Set(
     enabledRuleIds ?? getFigmaRulesCatalog().map((rule) => rule.id),
   );
@@ -37,7 +38,7 @@ export async function lintAutoLayoutNodes(
 
   const radiusNodes =
     enabledRuleIds === undefined || enabledRuleIds.has(radiusTokenCheck.id)
-      ? collectRadiusNodes()
+      ? collectRadiusNodes(roots)
       : [];
 
   for (const node of radiusNodes) {
@@ -61,7 +62,7 @@ export async function lintAutoLayoutNodes(
   ) {
     issues.push(
       ...lintSceneNodes(
-        collectDeprecatedComponentNodes(),
+        collectDeprecatedComponentNodes(roots),
         context,
         new Set([deprecatedComponentCheck.id]),
       ),

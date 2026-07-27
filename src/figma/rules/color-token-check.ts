@@ -3,9 +3,9 @@ import type { FigmaRule, FigmaRuleHit } from "../../types";
 export const COLOR_TOKEN_RULE = "ColorTokenCheck";
 export const COLOR_TOKEN_TITLE = "Цвет вне дизайн-системы";
 export const COLOR_TOKEN_DESCRIPTION =
-  "На слое используется цвет, который не связан с цветовым токеном дизайн-системы.";
+  "Цвет слоя не связан с дизайн-системой. Подключите соответствующий токен из дизайн-системы.";
 export const COLOR_TOKEN_SUGGESTION =
-  "Используйте соответствующий цветовой токен из дизайн-системы.";
+  "Подключите токен";
 
 type PaintField = "fills" | "strokes";
 
@@ -176,7 +176,7 @@ function createColorTokenHit(
     node,
     ruleId: COLOR_TOKEN_RULE,
     message: "",
-    match: `${field === "fills" ? "Fill" : "Stroke"}: ${color}`,
+    match: `${field === "fills" ? "fill" : "Stroke"}: ${color}`,
     replacement: COLOR_TOKEN_SUGGESTION,
     start: 0,
     end: 0,
@@ -262,7 +262,7 @@ export const ColorTokenCheck = {
   severity: "error" as const,
   type: "Figma" as const,
   category: "figma" as const,
-  guide: [COLOR_TOKEN_DESCRIPTION, COLOR_TOKEN_SUGGESTION],
+  guide: [COLOR_TOKEN_DESCRIPTION],
   check(node: SceneNode) {
     scheduleCheckedNodeIdsClear();
     console.log(`ColorTokenCheck start: ${node.id}`);

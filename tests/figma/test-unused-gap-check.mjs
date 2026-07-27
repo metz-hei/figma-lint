@@ -41,10 +41,6 @@ function isInsideInstance(node) {
 }
 
 function participatesInAutoLayout(node) {
-  if (node.visible === false) {
-    return false;
-  }
-
   if (node.layoutPositioning === "ABSOLUTE") {
     return false;
   }
@@ -52,12 +48,12 @@ function participatesInAutoLayout(node) {
   return true;
 }
 
-function countVisibleAutoLayoutChildren(node) {
+function countAutoLayoutChildren(node) {
   return node.children.filter(participatesInAutoLayout).length;
 }
 
 function hasUnusedGap(node) {
-  return node.itemSpacing > 0 && countVisibleAutoLayoutChildren(node) < 2;
+  return node.itemSpacing > 0 && countAutoLayoutChildren(node) < 2;
 }
 
 function checkUnusedGap(node) {
@@ -74,8 +70,8 @@ function checkUnusedGap(node) {
   return [
     {
       severity: "warning",
-      message: `Gap: ${node.itemSpacing}px → Уберите gap или добавьте второй элемент в Auto Layout.`,
       match: `gap: ${node.itemSpacing}`,
+      replacement: "Уберите gap",
     },
   ];
 }
@@ -135,9 +131,9 @@ const cases = [
     expectedCount: 0,
   },
   {
-    label: "FRAME с одним видимым и одним скрытым элементом — ошибка",
+    label: "FRAME с одним видимым и одним скрытым элементом — ошибки нет",
     node: container({ children: [child(), child({ visible: false })] }),
-    expectedCount: 1,
+    expectedCount: 0,
   },
   {
     label: "FRAME с одним обычным и одним absolute-элементом — ошибка",
@@ -178,10 +174,12 @@ for (const testCase of cases) {
 
   if (result.length > 0) {
     const issue = result[0];
-    const expectedMessage =
-      "Gap: 16px → Уберите gap или добавьте второй элемент в Auto Layout.";
 
-    if (issue.severity !== "warning" || issue.message !== expectedMessage) {
+    if (
+      issue.severity !== "warning" ||
+      issue.match !== "gap: 16" ||
+      issue.replacement !== "Уберите gap"
+    ) {
       console.error(`FAIL ${testCase.label}: wrong issue`, issue);
       failed++;
       continue;

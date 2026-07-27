@@ -14,7 +14,9 @@ export function hasDeprecatedComponentName(name: string): boolean {
   return DEPRECATED_COMPONENT_NAME_PATTERN.test(name);
 }
 
-export function collectDeprecatedComponentNodes(): SceneNode[] {
+export function collectDeprecatedComponentNodes(
+  roots: readonly SceneNode[] = figma.currentPage.children,
+): SceneNode[] {
   const nodes: SceneNode[] = [];
 
   const walk = (node: SceneNode) => {
@@ -33,8 +35,8 @@ export function collectDeprecatedComponentNodes(): SceneNode[] {
     }
   };
 
-  for (const child of figma.currentPage.children) {
-    walk(child);
+  for (const root of roots) {
+    walk(root);
   }
 
   return nodes;
