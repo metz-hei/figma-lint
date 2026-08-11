@@ -1,4 +1,5 @@
 /** Smoke-test для паттерна currency-space (дублирует src/rdpk/currency-space.ts). */
+const NBSP = "\u00A0";
 const CURRENCY_SPACE_REGEX = /\d[₽$€¥£₸₼]/g;
 
 function check(text) {
@@ -10,7 +11,7 @@ function getFixedText(text, match) {
   const currency = match[0].slice(1);
   return (
     text.slice(0, match.index) +
-    `${digit} ${currency}` +
+    `${digit}${NBSP}${currency}` +
     text.slice(match.index + match[0].length)
   );
 }
@@ -51,10 +52,10 @@ if (failed > 0) {
 console.log(`\n${cases.length} cases passed`);
 
 const fixCases = [
-  { text: "50₽", fixed: "50 ₽" },
-  { text: "99€", fixed: "99 €" },
-  { text: "100¥", fixed: "100 ¥" },
-  { text: "50,50₽", fixed: "50,50 ₽" },
+  { text: "50₽", fixed: `50${NBSP}₽` },
+  { text: "99€", fixed: `99${NBSP}€` },
+  { text: "100¥", fixed: `100${NBSP}¥` },
+  { text: "50,50₽", fixed: `50,50${NBSP}₽` },
 ];
 
 for (const { text, fixed } of fixCases) {

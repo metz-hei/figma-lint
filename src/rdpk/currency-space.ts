@@ -1,5 +1,7 @@
 import type { Rule } from "../types";
 
+const NBSP = "\u00A0";
+
 /**
  * Ловит суммы без пробела перед валютой: «50₽», «99€», «100$» и т.п.
  */
@@ -27,7 +29,7 @@ export const currencySpaceRule: Rule = {
         ruleId: "currency-space",
         message: "",
         match: match[0],
-        replacement: `${digit} ${currency}`,
+        replacement: `${digit}${NBSP}${currency}`,
         start: match.index,
         end: match.index + match[0].length,
       });

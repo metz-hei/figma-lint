@@ -12,6 +12,7 @@ import { multiplicationSignRule } from "./rdpk/multiplication-sign";
 import { negativeMinusRule } from "./rdpk/negative-minus";
 import { signedAmountRule } from "./rdpk/signed-amount";
 import { punctuationSpaceRule } from "./rdpk/punctuation-space";
+import { prepositionNbspRule } from "./rdpk/preposition-nbsp";
 import { repeatWordsRule } from "./rdpk/repeat-words";
 import { thousandSeparatorRule } from "./rdpk/thousand-separator";
 import { incompleteCentsRule } from "./rdpk/incomplete-cents";
@@ -33,6 +34,7 @@ const RULES: Rule[] = [
   yoLetterRule,
   duplicateSpacesRule,
   punctuationSpaceRule,
+  prepositionNbspRule,
   repeatWordsRule,
 ];
 

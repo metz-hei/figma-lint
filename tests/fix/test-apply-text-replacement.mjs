@@ -22,15 +22,16 @@ function assert(condition, message) {
 
 // замена
 {
+  const NBSP = "\u00A0";
   const text = "50₽";
   const issue = {
     start: 0,
     end: 3,
     match: "50₽",
-    replacement: "50 ₽",
+    replacement: `50${NBSP}₽`,
   };
   const got = applyTextReplacement(text, issue);
-  assert(got === "50 ₽", `replace: expected "50 ₽", got "${got}"`);
+  assert(got === `50${NBSP}₽`, `replace: expected "50${NBSP}₽", got "${got}"`);
   console.log(`ok replace: "${text}" → "${got}"`);
 }
 
@@ -89,7 +90,7 @@ function assert(condition, message) {
   const issue = {
     issueKind: "text",
     ruleId: "currency-space",
-    replacement: "50 ₽",
+    replacement: "50\u00A0₽",
   };
   assert(isFixable(issue) === true, "text rule should be fixable");
   console.log("ok isFixable: text rule → true");
