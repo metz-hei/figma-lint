@@ -29,6 +29,7 @@ type TextNodeWithSegments = TextNode & {
 
 type ColorTokenHit = FigmaRuleHit & {
   node: SceneNode;
+  paintField: PaintField;
 };
 
 const checkedNodeIds = new Set<string>();
@@ -172,7 +173,7 @@ function createColorTokenHit(
     color,
   });
 
-  return {
+  const hit = {
     node,
     ruleId: COLOR_TOKEN_RULE,
     message: "",
@@ -181,10 +182,21 @@ function createColorTokenHit(
     start: 0,
     end: 0,
   };
+
+  Object.defineProperty(hit, "paintField", {
+    value: field,
+  });
+
+  return hit as ColorTokenHit;
 }
 
 function getIssueKey(issue: ColorTokenHit): string {
-  return [issue.ruleId, issue.node.id, getNodePath(issue.node)].join("::");
+  return [
+    issue.ruleId,
+    issue.node.id,
+    getNodePath(issue.node),
+    issue.paintField,
+  ].join("::");
 }
 
 function dedupeColorIssues(issues: ColorTokenHit[]): ColorTokenHit[] {
