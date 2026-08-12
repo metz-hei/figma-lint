@@ -86,7 +86,19 @@ function getBoundVariableId(
   node: RadiusNode,
   field: RadiusField,
 ): string | undefined {
-  return node.boundVariables?.[field]?.id;
+  const direct = node.boundVariables?.[field]?.id;
+  if (direct) {
+    return direct;
+  }
+
+  // ponytail: на rectangle/frame Figma пишет binding cornerRadius в 4 угла, не в cornerRadius
+  if (field !== "cornerRadius") {
+    return undefined;
+  }
+
+  const ids = CORNER_FIELDS.map((corner) => node.boundVariables?.[corner]?.id);
+  const first = ids[0];
+  return first && ids.every((id) => id === first) ? first : undefined;
 }
 
 function getRadiusFieldsForNode(node: RadiusNode): RadiusField[] {

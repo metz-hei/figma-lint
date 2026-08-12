@@ -57,7 +57,19 @@ function getRadiusFieldsForNode(node) {
 }
 
 function getBoundVariableId(node, field) {
-  return node.boundVariables?.[field]?.id;
+  const direct = node.boundVariables?.[field]?.id;
+  if (direct) {
+    return direct;
+  }
+
+  // ponytail: на rectangle/frame Figma пишет binding cornerRadius в 4 угла, не в cornerRadius
+  if (field !== "cornerRadius") {
+    return undefined;
+  }
+
+  const ids = CORNER_FIELDS.map((corner) => node.boundVariables?.[corner]?.id);
+  const first = ids[0];
+  return first && ids.every((id) => id === first) ? first : undefined;
 }
 
 function checkRadiusNode(node, variablesById) {
@@ -110,6 +122,7 @@ function collectRadiusNodes(children) {
 }
 
 const variables = new Map([
+  ["v-radius-6", { name: "Radius-6" }],
   ["v-radius-12", { name: "Radius-12" }],
   ["v-radius-slash", { name: "Radius/16" }],
   ["v-color-12", { name: "Color-12" }],
@@ -186,6 +199,37 @@ const cases = [
     },
     expectedCount: 2,
     expectFields: ["topLeftRadius", "bottomLeftRadius"],
+  },
+  {
+    label: "uniform radius: Figma stores binding on 4 corners",
+    node: {
+      type: "RECTANGLE",
+      cornerRadius: 6,
+      topLeftRadius: 6,
+      topRightRadius: 6,
+      bottomRightRadius: 6,
+      bottomLeftRadius: 6,
+      boundVariables: {
+        topLeftRadius: { id: "v-radius-6" },
+        topRightRadius: { id: "v-radius-6" },
+        bottomRightRadius: { id: "v-radius-6" },
+        bottomLeftRadius: { id: "v-radius-6" },
+      },
+    },
+    expectedCount: 0,
+  },
+  {
+    label: "uniform radius: partial corner bindings still fail",
+    node: {
+      type: "FRAME",
+      cornerRadius: 6,
+      boundVariables: {
+        topLeftRadius: { id: "v-radius-6" },
+        topRightRadius: { id: "v-radius-6" },
+      },
+    },
+    expectedCount: 1,
+    expectReason: "no-binding",
   },
 ];
 
