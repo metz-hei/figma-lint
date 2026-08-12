@@ -1,7 +1,9 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+
+const { version } = JSON.parse(readFileSync("package.json", "utf8"));
 
 const manifest = {
-  name: "Figma Lint",
+  name: `Figma Lint ${version}`,
   id: "figma-lint-dev",
   api: "1.0.0",
   editorType: ["figma"],
@@ -16,4 +18,4 @@ const manifest = {
 
 mkdirSync("dist", { recursive: true });
 writeFileSync("dist/manifest.json", `${JSON.stringify(manifest, null, 2)}\n`);
-console.log("Wrote dist/manifest.json");
+console.log(`Wrote dist/manifest.json (v${version})`);

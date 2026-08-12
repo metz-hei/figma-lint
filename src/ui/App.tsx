@@ -149,15 +149,20 @@ export default function App() {
           </p>
         </div>
         {view === "issues" ? (
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            aria-label="Настройки"
-            onClick={() => setView("settings")}
-          >
-            <Settings />
-          </Button>
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="text-muted-foreground text-[10px] tabular-nums">
+              v{__APP_VERSION__}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              aria-label="Настройки"
+              onClick={() => setView("settings")}
+            >
+              <Settings />
+            </Button>
+          </div>
         ) : null}
       </header>
 
