@@ -12,6 +12,7 @@ import { radiusTokenCheck } from "./rules/radius-token-check";
 import { PrimaryButtonDisabledCheck } from "./rules/primary-button-disabled-check";
 import { spacingFromSpaceRule } from "./rules/spacing-from-space";
 import { UnusedGapCheck } from "./rules/unused-gap-check";
+import { NamingCheck } from "./rules/naming-check";
 
 type FigmaRuleHitWithNode = ReturnType<FigmaRule["check"]>[number] & {
   node?: SceneNode;
@@ -25,6 +26,7 @@ const FIGMA_RULES: FigmaRule[] = [
   radiusTokenCheck,
   deprecatedComponentCheck,
   PrimaryButtonDisabledCheck,
+  NamingCheck,
 ];
 
 console.log(

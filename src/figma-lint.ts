@@ -21,6 +21,10 @@ import {
   PrimaryButtonDisabledCheck,
 } from "./figma/rules/primary-button-disabled-check";
 import { ColorTokenCheck } from "./figma/rules/color-token-check";
+import {
+  collectNamingNodes,
+  NamingCheck,
+} from "./figma/rules/naming-check";
 import { collectSpacingBoundVariableIds } from "./figma/rules/spacing-from-space";
 import { collectAutoLayoutNodes } from "./figma/walker";
 import type { LintIssue } from "./types";
@@ -90,6 +94,7 @@ export async function lintAutoLayoutNodes(
   autoLayoutRuleIds.delete(AutoLayoutComponentCheck.id);
   autoLayoutRuleIds.delete(PrimaryButtonDisabledCheck.id);
   autoLayoutRuleIds.delete(ColorTokenCheck.id);
+  autoLayoutRuleIds.delete(NamingCheck.id);
   const boundVariableIds = new Set<string>();
 
   for (const node of nodes) {
@@ -123,6 +128,16 @@ export async function lintAutoLayoutNodes(
         [...scanRoots],
         context,
         new Set([ColorTokenCheck.id]),
+      ),
+    );
+  }
+
+  if (enabledRuleIds === undefined || enabledRuleIds.has(NamingCheck.id)) {
+    issues.push(
+      ...lintSceneNodes(
+        collectNamingNodes(scanRoots),
+        context,
+        new Set([NamingCheck.id]),
       ),
     );
   }
