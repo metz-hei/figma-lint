@@ -1,4 +1,5 @@
 import type { FigmaRule, FigmaRuleHit } from "../../types";
+import { getScanRoots } from "../scope";
 
 const DEPRECATED_COMPONENT_MESSAGE =
   "Используется компонент, помеченный как устаревший или запрещённый для использования.";
@@ -15,7 +16,7 @@ export function hasDeprecatedComponentName(name: string): boolean {
 }
 
 export function collectDeprecatedComponentNodes(
-  roots: readonly SceneNode[] = figma.currentPage.children,
+  roots: readonly SceneNode[] = getScanRoots(),
 ): SceneNode[] {
   const nodes: SceneNode[] = [];
 

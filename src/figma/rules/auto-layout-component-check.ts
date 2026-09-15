@@ -1,5 +1,6 @@
 import type { FigmaRule, FigmaRuleHit } from "../../types";
 import { isEffectivelyVisible } from "../../visibility";
+import { getScanRoots } from "../scope";
 
 type AutoLayoutComponentHit = FigmaRuleHit & {
   node: SceneNode;
@@ -7,18 +8,18 @@ type AutoLayoutComponentHit = FigmaRuleHit & {
 
 const AUTO_LAYOUT_COMPONENT_RULE_ID = "auto-layout-component-check";
 const AUTO_LAYOUT_COMPONENT_TITLE =
-  "Компонент собран не полностью на Auto Layout";
+  "Компонент должен быть собран на Auto Layout";
 const FRAME_MESSAGE =
-  "Frame без Auto Layout → Включите Auto Layout для этого слоя.";
+  "Frame → Включите Auto Layout";
 const GROUP_MESSAGE =
-  "Group → Замените Group на Auto Layout.";
+  "Group → Включите Auto Layout";
 
 function isComponentStructureRoot(node: SceneNode): boolean {
   return node.type === "COMPONENT" || node.type === "COMPONENT_SET";
 }
 
 export function collectAutoLayoutComponentNodes(
-  roots: readonly SceneNode[] = figma.currentPage.children,
+  roots: readonly SceneNode[] = getScanRoots(),
 ): SceneNode[] {
   const nodes: SceneNode[] = [];
   const isPageWideScan = roots === figma.currentPage.children;
@@ -85,7 +86,7 @@ export const AutoLayoutComponentCheck = {
   type: "Figma" as const,
   category: "figma" as const,
   guide: [
-    "Компоненты и варианты должны быть полностью собраны на Auto Layout без Group и обычных Frame.",
+    "Компоненты и варианты должны быть собраны на Auto Layout. Без Group и Frame.",
   ],
   check(node: SceneNode) {
     if (
@@ -102,15 +103,8 @@ export const AutoLayoutComponentCheck = {
     const checkedNodeIds = new Set<string>();
     const problemNodeIds = new Set<string>();
 
-    console.log(
-      `[AutoLayoutComponentCheck] check root type=${node.type}; name=${node.name}; id=${node.id}; layoutMode=${"layoutMode" in node ? node.layoutMode : "n/a"}`,
-    );
-
     const addIssue = (problemNode: SceneNode, message: string) => {
       if (problemNodeIds.has(problemNode.id)) {
-        console.log(
-          `[AutoLayoutComponentCheck] duplicate issue skipped type=${problemNode.type}; name=${problemNode.name}; id=${problemNode.id}`,
-        );
         return;
       }
 
@@ -119,38 +113,16 @@ export const AutoLayoutComponentCheck = {
     };
 
     const walk = (current: SceneNode) => {
-      const layoutMode = "layoutMode" in current ? current.layoutMode : "n/a";
-
-      if (checkedNodeIds.has(current.id)) {
-        console.log(
-          `[AutoLayoutComponentCheck] visit skipped duplicate type=${current.type}; name=${current.name}; id=${current.id}; layoutMode=${layoutMode}`,
-        );
-        return;
-      }
-
-      if (current.visible === false) {
-        console.log(
-          `[AutoLayoutComponentCheck] visit skipped hidden type=${current.type}; name=${current.name}; id=${current.id}; layoutMode=${layoutMode}`,
-        );
+      if (checkedNodeIds.has(current.id) || current.visible === false) {
         return;
       }
 
       checkedNodeIds.add(current.id);
 
       if (current.type === "GROUP") {
-        console.log(
-          `[AutoLayoutComponentCheck] visit violation=GROUP type=${current.type}; name=${current.name}; id=${current.id}; layoutMode=${layoutMode}`,
-        );
         addIssue(current, GROUP_MESSAGE);
       } else if (current.type === "FRAME" && hasDisabledAutoLayout(current)) {
-        console.log(
-          `[AutoLayoutComponentCheck] visit violation=FRAME_NONE type=${current.type}; name=${current.name}; id=${current.id}; layoutMode=${layoutMode}`,
-        );
         addIssue(current, FRAME_MESSAGE);
-      } else {
-        console.log(
-          `[AutoLayoutComponentCheck] visit ok type=${current.type}; name=${current.name}; id=${current.id}; layoutMode=${layoutMode}`,
-        );
       }
 
       if ("children" in current) {

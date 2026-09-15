@@ -1,5 +1,7 @@
+import { getScanRoots } from "./scope";
+
 export function collectAutoLayoutNodes(
-  roots: readonly SceneNode[] = figma.currentPage.children,
+  roots: readonly SceneNode[] = getScanRoots(),
 ): SceneNode[] {
   const nodes: SceneNode[] = [];
 

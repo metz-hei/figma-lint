@@ -27,12 +27,6 @@ const FIGMA_RULES: FigmaRule[] = [
   PrimaryButtonDisabledCheck,
 ];
 
-console.log(
-  `[AutoLayoutComponentCheck] registered=${FIGMA_RULES.some(
-    (rule) => rule.id === AutoLayoutComponentCheck.id,
-  )}; rules=${FIGMA_RULES.map((rule) => rule.id).join(",")}`,
-);
-
 export function getFigmaRulesCatalog(): RuleCatalogEntry[] {
   return FIGMA_RULES.map(({ id, name, category, guide }) => ({
     id,
