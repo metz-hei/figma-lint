@@ -5,9 +5,11 @@ import type {
   RuleCatalogEntry,
 } from "../types";
 import { isEffectivelyVisible } from "../visibility";
+import { AutoLayoutComponentCheck } from "./rules/auto-layout-component-check";
 import { ColorTokenCheck } from "./rules/color-token-check";
 import { deprecatedComponentCheck } from "./rules/deprecated-component-check";
 import { radiusTokenCheck } from "./rules/radius-token-check";
+import { PrimaryButtonDisabledCheck } from "./rules/primary-button-disabled-check";
 import { spacingFromSpaceRule } from "./rules/spacing-from-space";
 import { UnusedGapCheck } from "./rules/unused-gap-check";
 
@@ -16,11 +18,13 @@ type FigmaRuleHitWithNode = ReturnType<FigmaRule["check"]>[number] & {
 };
 
 const FIGMA_RULES: FigmaRule[] = [
+  AutoLayoutComponentCheck,
   spacingFromSpaceRule,
   UnusedGapCheck,
   ColorTokenCheck,
   radiusTokenCheck,
   deprecatedComponentCheck,
+  PrimaryButtonDisabledCheck,
 ];
 
 export function getFigmaRulesCatalog(): RuleCatalogEntry[] {

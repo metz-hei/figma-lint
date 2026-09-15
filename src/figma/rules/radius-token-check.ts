@@ -1,4 +1,5 @@
 import type { FigmaRule, FigmaRuleContext, FigmaRuleHit } from "../../types";
+import { getScanRoots } from "../scope";
 
 export const RADIUS_TOKEN_TITLE = "Радиус вне дизайн-системы";
 export const RADIUS_TOKEN_DESCRIPTION =
@@ -132,7 +133,7 @@ export function collectRadiusBoundVariableIds(node: SceneNode): string[] {
 }
 
 export function collectRadiusNodes(
-  roots: readonly SceneNode[] = figma.currentPage.children,
+  roots: readonly SceneNode[] = getScanRoots(),
 ): SceneNode[] {
   const nodes: SceneNode[] = [];
 

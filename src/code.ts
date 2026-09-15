@@ -1,5 +1,6 @@
 import { applyTextReplacement, isFixable } from "./fix";
 import { lintAutoLayoutNodes } from "./figma-lint";
+import { getScanRoots } from "./figma/scope";
 import { lintTextNodes } from "./linter";
 import {
   getDefaultSettings,
@@ -23,11 +24,6 @@ declare const __html__: string;
 figma.showUI(__html__, { width: 420, height: 560, themeColors: true });
 
 let settings: PluginSettings = getDefaultSettings();
-
-function getScanRoots(): readonly SceneNode[] {
-  const selection = figma.currentPage.selection;
-  return selection.length > 0 ? selection : figma.currentPage.children;
-}
 
 function collectTextNodes(roots: readonly SceneNode[]): TextNode[] {
   const nodes: TextNode[] = [];

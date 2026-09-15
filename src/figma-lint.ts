@@ -8,12 +8,22 @@ import {
   deprecatedComponentCheck,
 } from "./figma/rules/deprecated-component-check";
 import {
+  AutoLayoutComponentCheck,
+  collectAutoLayoutComponentNodes,
+} from "./figma/rules/auto-layout-component-check";
+import {
   collectRadiusBoundVariableIds,
   collectRadiusNodes,
   radiusTokenCheck,
 } from "./figma/rules/radius-token-check";
+import {
+  collectPrimaryButtonInstances,
+  PrimaryButtonDisabledCheck,
+} from "./figma/rules/primary-button-disabled-check";
+import { ColorTokenCheck } from "./figma/rules/color-token-check";
 import { collectSpacingBoundVariableIds } from "./figma/rules/spacing-from-space";
 import { collectAutoLayoutNodes } from "./figma/walker";
+import { getScanRoots } from "./figma/scope";
 import type { LintIssue } from "./types";
 
 export { getFigmaRulesCatalog, lintSceneNodes };
@@ -22,12 +32,16 @@ export async function lintAutoLayoutNodes(
   enabledRuleIds?: ReadonlySet<string>,
   roots?: readonly SceneNode[],
 ): Promise<LintIssue[]> {
-  const nodes = collectAutoLayoutNodes(roots);
+  const scanRoots = roots ?? getScanRoots();
+  const nodes = collectAutoLayoutNodes(scanRoots);
   const autoLayoutRuleIds = new Set(
     enabledRuleIds ?? getFigmaRulesCatalog().map((rule) => rule.id),
   );
   autoLayoutRuleIds.delete(deprecatedComponentCheck.id);
   autoLayoutRuleIds.delete(radiusTokenCheck.id);
+  autoLayoutRuleIds.delete(AutoLayoutComponentCheck.id);
+  autoLayoutRuleIds.delete(PrimaryButtonDisabledCheck.id);
+  autoLayoutRuleIds.delete(ColorTokenCheck.id);
   const boundVariableIds = new Set<string>();
 
   for (const node of nodes) {
@@ -38,7 +52,7 @@ export async function lintAutoLayoutNodes(
 
   const radiusNodes =
     enabledRuleIds === undefined || enabledRuleIds.has(radiusTokenCheck.id)
-      ? collectRadiusNodes(roots)
+      ? collectRadiusNodes(scanRoots)
       : [];
 
   for (const node of radiusNodes) {
@@ -49,6 +63,32 @@ export async function lintAutoLayoutNodes(
 
   const context = await createFigmaRuleContext(boundVariableIds);
   const issues = lintSceneNodes(nodes, context, autoLayoutRuleIds);
+  const isColorTokenCheckEnabled =
+    enabledRuleIds === undefined || enabledRuleIds.has(ColorTokenCheck.id);
+  const isAutoLayoutComponentCheckEnabled =
+    enabledRuleIds === undefined ||
+    enabledRuleIds.has(AutoLayoutComponentCheck.id);
+
+  if (isColorTokenCheckEnabled) {
+    issues.push(
+      ...lintSceneNodes(
+        [...scanRoots],
+        context,
+        new Set([ColorTokenCheck.id]),
+      ),
+    );
+  }
+
+  if (isAutoLayoutComponentCheckEnabled) {
+    const autoLayoutComponentNodes = collectAutoLayoutComponentNodes(scanRoots);
+    const autoLayoutComponentIssues = lintSceneNodes(
+      autoLayoutComponentNodes,
+      context,
+      new Set([AutoLayoutComponentCheck.id]),
+    );
+
+    issues.push(...autoLayoutComponentIssues);
+  }
 
   if (radiusNodes.length > 0) {
     issues.push(
@@ -62,9 +102,22 @@ export async function lintAutoLayoutNodes(
   ) {
     issues.push(
       ...lintSceneNodes(
-        collectDeprecatedComponentNodes(roots),
+        collectDeprecatedComponentNodes(scanRoots),
         context,
         new Set([deprecatedComponentCheck.id]),
+      ),
+    );
+  }
+
+  if (
+    enabledRuleIds === undefined ||
+    enabledRuleIds.has(PrimaryButtonDisabledCheck.id)
+  ) {
+    issues.push(
+      ...lintSceneNodes(
+        collectPrimaryButtonInstances(scanRoots),
+        context,
+        new Set([PrimaryButtonDisabledCheck.id]),
       ),
     );
   }

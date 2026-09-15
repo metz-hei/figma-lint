@@ -29,6 +29,7 @@ type TextNodeWithSegments = TextNode & {
 
 type ColorTokenHit = FigmaRuleHit & {
   node: SceneNode;
+  paintField: PaintField;
 };
 
 const checkedNodeIds = new Set<string>();
@@ -161,18 +162,9 @@ function createColorTokenHit(
   field: PaintField,
   paint: SolidPaint,
 ): ColorTokenHit {
-  const nodePath = getNodePath(node);
   const color = formatSolidPaintColor(paint);
 
-  console.log("[ColorTokenCheck] violation", {
-    nodeId: node.id,
-    nodeName: node.name,
-    path: nodePath,
-    ruleId: COLOR_TOKEN_RULE,
-    color,
-  });
-
-  return {
+  const hit = {
     node,
     ruleId: COLOR_TOKEN_RULE,
     message: "",
@@ -181,10 +173,21 @@ function createColorTokenHit(
     start: 0,
     end: 0,
   };
+
+  Object.defineProperty(hit, "paintField", {
+    value: field,
+  });
+
+  return hit as ColorTokenHit;
 }
 
 function getIssueKey(issue: ColorTokenHit): string {
-  return [issue.ruleId, issue.node.id, getNodePath(issue.node)].join("::");
+  return [
+    issue.ruleId,
+    issue.node.id,
+    getNodePath(issue.node),
+    issue.paintField,
+  ].join("::");
 }
 
 function dedupeColorIssues(issues: ColorTokenHit[]): ColorTokenHit[] {
@@ -200,11 +203,6 @@ function dedupeColorIssues(issues: ColorTokenHit[]): ColorTokenHit[] {
     seen.add(key);
     deduped.push(issue);
   }
-
-  console.log("[ColorTokenCheck] dedupe", {
-    before: issues.length,
-    after: deduped.length,
-  });
 
   return deduped;
 }
@@ -231,11 +229,6 @@ function checkNodeColors(node: SceneNode): ColorTokenHit[] {
 
 function collectColorIssues(node: SceneNode): ColorTokenHit[] {
   if (checkedNodeIds.has(node.id)) {
-    console.log("[ColorTokenCheck] skip already checked", {
-      nodeId: node.id,
-      nodeName: node.name,
-      path: getNodePath(node),
-    });
     return [];
   }
 
@@ -265,11 +258,7 @@ export const ColorTokenCheck = {
   guide: [COLOR_TOKEN_DESCRIPTION],
   check(node: SceneNode) {
     scheduleCheckedNodeIdsClear();
-    console.log(`ColorTokenCheck start: ${node.id}`);
 
-    const issues = dedupeColorIssues(collectColorIssues(node));
-
-    console.log(`ColorTokenCheck finish: ${node.id}`);
-    return issues;
+    return dedupeColorIssues(collectColorIssues(node));
   },
 } satisfies FigmaRule;
