@@ -71,6 +71,8 @@ export type FigmaRule = {
   severity: LintSeverity;
   type: LintType;
   category: "figma";
+  /** Короткое описание правила для списка настроек */
+  description?: string;
   guide: string[];
   check: (node: SceneNode, context: FigmaRuleContext) => FigmaRuleHit[];
 };
@@ -79,6 +81,8 @@ export type RuleCatalogEntry = {
   id: string;
   name: string;
   category: RuleCategory;
+  /** Короткое описание правила для списка настроек */
+  description?: string;
   guide?: string[];
 };
 
