@@ -19,7 +19,9 @@ export function getFullRulesCatalog(): RuleCatalogEntry[] {
 
 export function getDefaultSettings(): PluginSettings {
   return {
-    enabledRuleIds: getFullRulesCatalog().map((rule) => rule.id),
+    enabledRuleIds: getFullRulesCatalog()
+      .filter((rule) => rule.id !== "naming-check")
+      .map((rule) => rule.id),
   };
 }
 

@@ -24,6 +24,10 @@ const CATEGORY_SECTIONS: { category: RuleCategory; title: string }[] = [
 ];
 
 function getRuleDescription(rule: RuleCatalogEntry): string {
+  if (rule.description) {
+    return rule.description;
+  }
+
   if (rule.category === "figma" && rule.guide?.[0]) {
     return rule.guide[0];
   }

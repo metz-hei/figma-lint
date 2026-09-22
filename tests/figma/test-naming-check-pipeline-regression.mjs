@@ -28,6 +28,7 @@ const set = {
   children: [valid, invalid], parent: null,
   componentPropertyDefinitions: {
     State: { type: "VARIANT", defaultValue: "Default", variantOptions: ["Default"] },
+    "bad_prop": { type: "VARIANT", defaultValue: "very-large", variantOptions: ["very-large"] },
   },
 };
 valid.parent = set;
@@ -47,11 +48,18 @@ globalThis.figma = {
 const { lintAutoLayoutNodes } = await import(pathToFileURL(outfile).href);
 const issues = await lintAutoLayoutNodes(new Set(["naming-check"]), page.selection);
 
-// Имя варианта внутри сета не проверяем (его генерирует Figma), поэтому у
-// invalid остаются только нарушения props: «bad_prop» и «very-large».
-if (issues.length !== 2 || !issues.every((issue) => issue.nodeId === "invalid")) {
+// Имя варианта внутри сета не проверяем (его генерирует Figma), а props
+// вариантов не проверяются вообще: вариант внутри сета игнорируется целиком.
+// «bad_prop» и «very-large» приходят из definitions самого сета, поэтому
+// оба замечания висят на узле сета; проверяемое значение лежит в match.
+if (
+  issues.length !== 2 ||
+  !issues.every((issue) => issue.nodeId === "set") ||
+  !issues.some((issue) => issue.match === "bad_prop") ||
+  !issues.some((issue) => issue.match === "very-large")
+) {
   throw new Error(`FAIL pipeline returned unexpected issues: ${JSON.stringify(issues)}`);
 }
 
 console.log("ok: selection → COMPONENT_SET → variants завершается при throwing getter");
-console.log("ok: корректный variant завершается без issues, нарушения props возвращают issues");
+console.log("ok: вариант внутри сета игнорируется, props проверяются у самого сета");

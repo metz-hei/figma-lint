@@ -30,10 +30,11 @@ const FIGMA_RULES: FigmaRule[] = [
 ];
 
 export function getFigmaRulesCatalog(): RuleCatalogEntry[] {
-  return FIGMA_RULES.map(({ id, name, category, guide }) => ({
+  return FIGMA_RULES.map(({ id, name, category, description, guide }) => ({
     id,
     name,
     category,
+    description,
     guide,
   }));
 }

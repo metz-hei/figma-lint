@@ -2,7 +2,7 @@ import type { FigmaRule, FigmaRuleHit } from "../../types";
 import { getScanRoots } from "../scope";
 
 const DEPRECATED_COMPONENT_MESSAGE =
-  "Используется компонент, помеченный как устаревший или запрещённый для использования.";
+  "Замените устаревший компонент";
 
 const DEPRECATED_COMPONENT_NAME_PATTERN =
   /(?:don['’]?t\s+use|не\s+использовать)/iu;
