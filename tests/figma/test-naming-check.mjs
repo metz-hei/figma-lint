@@ -52,6 +52,10 @@ for (const name of [
   "💻 Button Primary",
   "💻 Button Primary 💙",
   "💻 Button Primary 🧡",
+  "🍎 Button Primary",
+  "🤖 Button Primary",
+  "🍎 Button Primary 💙",
+  "🤖 Button Primary 🧡",
   "🍎🤖 Button Primary",
   "🍎🤖 Button Primary 💙",
   "🍎🤖 Button Primary 🧡",
@@ -65,7 +69,7 @@ assert(
 );
 
 // Пара иконок есть, но разделена пробелом — это отдельная формулировка,
-// а не «всегда парная».
+// а не порядок иконок.
 for (const name of ["🍎 🤖 Button Primary", "🤖 🍎 Button Primary"]) {
   const issues = NamingCheck.check(component(name, name), {});
   assert(
@@ -75,12 +79,20 @@ for (const name of ["🍎 🤖 Button Primary", "🤖 🍎 Button Primary"]) {
   );
 }
 
-// Одиночная иконка и неверный порядок — по-прежнему «всегда парная».
-for (const name of ["🍎 Button Primary", "🤖 Button Primary", "🤖🍎 Button Primary"]) {
+// Одиночная 🍎/🤖 — допустимая маркировка, а не ошибка.
+for (const name of ["🍎 Button Primary", "🤖 Button Primary"]) {
+  assert(
+    `одиночная иконка мобильной платформы допустима: ${name}`,
+    NamingCheck.check(component(name, name), {}).length === 0,
+  );
+}
+
+// Обратный порядок без пробела — ошибка порядка иконок.
+for (const name of ["🤖🍎 Button Primary", "🤖🍎 Button Primary 💙"]) {
   const issues = NamingCheck.check(component(name, name), {});
   assert(
-    `непарная маркировка мобильной платформы: ${name}`,
-    issues.length === 1 && issues[0].message.includes("всегда парная"),
+    `неверный порядок иконок мобильной платформы: ${name}`,
+    issues.length === 1 && issues[0].message.includes("пишутся в порядке"),
   );
 }
 
@@ -196,7 +208,7 @@ assert(
   NamingCheck.check(unsupported, {}).length === 0,
 );
 
-for (const name of ["Button", "🍎 Button", "🍎 Container-box", "🤖 Button", "🤖🍎 Button", "💻Button"] ) {
+for (const name of ["Button", "Container Box", "🍎Button", "🍎🤖Button", "💻Button"] ) {
   assert(`неверный platform prefix: ${name}`, NamingCheck.check(component(name, name), {}).length > 0);
 }
 assert("цифры и punctuation запрещены", NamingCheck.check(component("bad", "💻 Button 2"), {}).length > 0);

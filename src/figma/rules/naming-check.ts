@@ -11,11 +11,11 @@ export const NAMING_TITLE = "Нейминг";
 export const NAMING_DESCRIPTION =
   "Наименование компонентов, пропсов и их значений";
 export const NAMING_PLATFORM_PREFIX =
-  "Название компонента должно начинаться с маркировки платформы 💻 или 🍎🤖";
+  "Название компонента должно начинаться с маркировки платформы: 💻, 🍎 или 🤖";
 export const NAMING_PLATFORM_SPACE =
   "Маркировка платформы и название компонента должны быть разделены пробелом";
-export const NAMING_MOBILE_PAIR =
-  "Маркировка мобильной платформы всегда парная 🍎🤖";
+export const NAMING_MOBILE_PAIR_ORDER =
+  "Иконки мобильной платформы пишутся в порядке 🍎🤖";
 export const NAMING_MOBILE_PAIR_SPACE =
   "Маркировка мобильной платформы пишется без пробела между иконками 🍎🤖";
 export const NAMING_SUFFIX_POSITION =
@@ -35,7 +35,9 @@ export const NAMING_SUFFIX_SPACE =
 // Эмодзи — суррогатные пары, поэтому во всех классах обязателен флаг `u`:
 // без него класс матчит отдельный суррогат и replace рвёт эмодзи пополам.
 const TITLE_CASE = /^[A-Z][a-z]*(?: [A-Z][a-z]*)*$/u;
-const MOBILE_ICON = /[🍎🤖]/u;
+// Маркировка платформы: 💻, одиночные 🍎/🤖 или пара 🍎🤖.
+const PLATFORM_PREFIX = /^(?:💻|🍎🤖|🍎|🤖)/u;
+const MOBILE_PAIR_ORDER = /^🤖🍎/u;
 const MOBILE_PAIR_SPACED = /^[🍎🤖]\s+[🍎🤖]/u;
 const BUSINESS_MARK = /[💙🧡]/u;
 const BUSINESS_MARK_AT_START = /^[💙🧡]/u;
@@ -83,20 +85,16 @@ function formatProblems(value: string, error: string): string[] {
 }
 
 function componentNameProblems(name: string): string[] {
+  // 3. Парная маркировка мобильной платформы пишется только в порядке 🍎🤖,
+  // иначе 🤖🍎 прошло бы проверку как одиночная 🤖.
+  if (MOBILE_PAIR_ORDER.test(name)) return [NAMING_MOBILE_PAIR_ORDER];
+  if (MOBILE_PAIR_SPACED.test(name)) return [NAMING_MOBILE_PAIR_SPACE];
+
   // 1–2. Маркировка платформы и пробел после неё.
-  let body: string;
-  if (name.startsWith("💻")) {
-    body = name.slice("💻".length);
-  } else if (name.startsWith("🍎🤖")) {
-    body = name.slice("🍎🤖".length);
-  } else if (MOBILE_ICON.test(name)) {
-    // 3. Одиночная 🍎/🤖, иконки не в том порядке или между ними пробел.
-    return [
-      MOBILE_PAIR_SPACED.test(name) ? NAMING_MOBILE_PAIR_SPACE : NAMING_MOBILE_PAIR,
-    ];
-  } else {
-    return [NAMING_PLATFORM_PREFIX];
-  }
+  const prefix = name.match(PLATFORM_PREFIX)?.[0];
+  if (prefix === undefined) return [NAMING_PLATFORM_PREFIX];
+
+  const body = name.slice(prefix.length);
 
   // 4. Марка бизнеса вплотную к платформе — это прежде всего проблема
   // позиции марки, а не отсутствующего пробела.
@@ -186,7 +184,7 @@ export const NamingCheck = {
   guide: [
     NAMING_PLATFORM_PREFIX,
     NAMING_PLATFORM_SPACE,
-    NAMING_MOBILE_PAIR,
+    NAMING_MOBILE_PAIR_ORDER,
     NAMING_MOBILE_PAIR_SPACE,
     NAMING_SUFFIX_POSITION,
     NAMING_BOTH_BUSINESS,
